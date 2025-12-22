@@ -116,5 +116,5 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 export PATH=$PATH:~./local/bin
 export PATH=$PATH:~./local/scripts
-# eval "$(~/.dotfiles/omp/oh-my-posh init bash --config ~/.dotfiles/omp/the-unnamed.omp.json)"
+# eval "$(~/oh-my-posh/oh-my-posh init bash --config ~/oh-my-posh/the-unnamed.omp.json)"
 # . "$HOME/.cargo/env"
