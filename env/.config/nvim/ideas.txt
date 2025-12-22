@@ -1,0 +1,6 @@
+git integration (vim-fugitive ?)
+Shift+Backspace delete word
+Enter/Tab to auto complett
+vim.keymap.set('n', '<C-p>', builtin.git_files, {}) -- to fizzy find only git files
+install harpoon (<leader>1, <leader>2 ...)
+install undotree (<leader>u)
