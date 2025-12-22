@@ -56,6 +56,10 @@ copy_file() {
 	execute cp $from $to/$name
 }
 
+if [ ! -d "$HOME/.confg" ]; then
+    execute mkdir -p "$HOME/.config"
+fi
+
 copy_dir env/.config $XDG_CONFIG_HOME
 copy_dir env/.local $HOME/.local
 
