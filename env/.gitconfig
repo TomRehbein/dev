@@ -1,0 +1,160 @@
+[user]
+    name = TomRehbein
+    email = mastertomi01@googlemail.com
+
+[core]
+    editor = nvim
+    autocrlf = input
+    safecrlf = warn
+    excludesfile = ~/.gitignore_global
+    pager = less -FRX
+
+[init]
+    defaultBranch = main
+
+[color]
+    ui = auto
+    branch = auto
+    diff = auto
+    status = auto
+
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+
+[color "status"]
+    added = green
+    changed = yellow
+    untracked = cyan
+
+[alias]
+    cm = commit -m
+    acm = !git add -A && git commit -m
+    co = checkout
+    cob = checkout -b
+    br = branch
+    brs = branch -a
+    df = diff
+
+    lg = log --oneline --graph --all
+    last = log -1 HEAD
+    visual = !gitk
+    plog = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+    show-files = diff-tree --no-commit-id --name-only -r
+
+    unstage = reset HEAD --
+    undo = reset --soft HEAD~1
+    undo-hard = reset --hard HEAD~1
+    res = !git reset --hard
+
+    amend = commit --amend
+
+    remotes = remote -v
+
+    cleanup = "!git branch --merged | grep -v '\\*\\|main\\|master\\|develop' | xargs -n 1 git branch -d"
+
+    current = rev-parse --abbrev-ref HEAD
+    push-current = "!git push -u origin $(git current)"
+
+    prev = checkout -
+
+    changed = diff --name-only HEAD~1
+
+    search = log --grep
+    author = log --author
+
+    since = log --since
+    until = log --until
+
+    stash-list = stash list
+    stash-show = stash show -p
+    stash-apply = stash apply
+    stash-pop = stash pop
+    stash-drop = stash drop
+
+    merge-no-ff = merge --no-ff
+    merge-squash = merge --squash
+
+    worktree-list = worktree list
+    worktree-add = worktree add
+    worktree-remove = worktree remove
+
+[push]
+    default = simple
+    followTags = true
+
+[pull]
+    rebase = true
+
+[merge]
+    tool = vimdiff
+    conflictstyle = diff3
+
+[diff]
+    tool = vimdiff
+    algorithm = patience
+    compactionHeuristic = true
+
+[rerere]
+    enable = true
+
+[branch]
+    autosetuprebase = always
+
+[rebase]
+    autosquash = true
+
+[status]
+    showUntrackedFiles = all
+
+[commit]
+    template = ~/.gitmessage
+    gpgsign = false
+
+[tag]
+    sort = version:refname
+
+[versionsort]
+    prereleaseSuffix = -pre
+    prereleaseSuffix = .pre
+    prereleaseSuffix = -beta
+    prereleaseSuffix = .beta
+    prereleaseSuffix = -rc
+    prereleaseSuffix = .rc
+
+[url "https://github.com/"]
+    insteadOf = gh:
+    insteadOf = github:
+
+[url "https://gitlab.com/"]
+    insteadOf = gl:
+    insteadOf = gitlab:
+
+[include]
+    path = ~/.gitconfig.local
+
+[pager]
+    diff = delta
+    log = delta
+    reflog = delta
+    show = delta
+
+[delta]
+    navigate = true
+    light = false
+    side-by-side = true
+    line-numbers = true
+
+[interactive]
+    diffFilter = delta --color-only
+
+[maintenance]
+    repo = true
+    strategy = incremental
