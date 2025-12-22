@@ -1,5 +1,0 @@
-export PATH=$PATH:$HOME/.local/apps
-export PATH=$PATH:$HOME/.local/scripts
-export PATH=$PATH:$HOME/.local/bin
-export PATH=$PATH:$HOME/.local/odin/
-export PATH=$PATH:$HOME/.npm-global/bin

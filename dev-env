@@ -60,6 +60,6 @@ copy_dir env/.config $XDG_CONFIG_HOME
 copy_dir env/.local $HOME/.local
 
 copy_file env/.bashrc $HOME
+copy_file env/.bash_profile $HOME
 copy_file env/.inputrc $HOME
-copy_file env/.profile $HOME
 copy_file env/.gitconfig $HOME
