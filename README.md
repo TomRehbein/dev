@@ -8,13 +8,9 @@ if ! command -v git &> /dev/null; then
     sudo apt -y install git
 fi
 
-if [ ! -d $HOME/personal ]; then
-    mkdir $HOME/personal
-fi
+git clone https://github.com/TomRehbein/dev $HOME/dev
 
-git clone https://github.com/TomRehbein/dev $HOME/personal/dev
-
-pushd $HOME/personal/dev
+pushd $HOME/dev
 ./run
 popd
 ```
