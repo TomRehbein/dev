@@ -5,6 +5,7 @@ PERSONAL=$HOME/personal
 DEV_ENV=$HOME/dev
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+[ -f ~/.bashrc ] && source ~/.bashrc
 
 export GIT_EDITOR=$VIM
 export DEV_ENV_HOME="$HOME/personal/dev"
@@ -31,4 +32,3 @@ addToPathFront $HOME/.local/npm/bin
 addToPath $HOME/.cargo/bin
 addToPath $HOME/.local/personal
 addToPath $HOME/.npm-global/bin
-

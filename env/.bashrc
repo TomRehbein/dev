@@ -117,4 +117,3 @@ export NVM_DIR="$HOME/.nvm"
 export PATH=$PATH:~./local/bin
 export PATH=$PATH:~./local/scripts
 # eval "$(~/oh-my-posh/oh-my-posh init bash --config ~/oh-my-posh/the-unnamed.omp.json)"
-
