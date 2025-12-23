@@ -2,7 +2,7 @@ export XDG_CONFIG_HOME=$HOME/.config
 VIM="nvim"
 
 PERSONAL=$HOME/personal
-DEV_ENV=$HOME/dev
+DEV_ENV=$PERSONAL/dev
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
