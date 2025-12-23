@@ -52,7 +52,7 @@ copy_file() {
 	to=$2
 	name=$(basename $from)
 
-	execute rm $to/$name
+	execute rm $to/$name 2> /dev/null
 	execute cp $from $to/$name
 }
 

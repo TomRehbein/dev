@@ -12,5 +12,6 @@ git clone https://github.com/TomRehbein/dev $HOME/dev
 
 pushd $HOME/dev
 ./run
+./dev-env
 popd
 ```
