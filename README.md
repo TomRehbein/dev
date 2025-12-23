@@ -1,21 +1,5 @@
 Init after fresh installation
 
 ```
-#!/usr/bin/env bash
-sudo apt -y update
-
-if ! command -v git &> /dev/null; then
-    sudo apt -y install git
-fi
-
-if [ ! -d $HOME/personal ]; then
-    mkdir $HOME/personal
-fi
-
-git clone https://github.com/TomRehbein/dev $HOME/personal/dev
-
-pushd $HOME/personal/dev
-./run
-./dev-env
-popd
+curl -fsSL https://github.com/TomRehbein/dev/blob/main/install | bash
 ```
