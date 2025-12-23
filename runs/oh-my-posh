@@ -2,5 +2,7 @@ if [ ! -d "$HOME/.local/bin" ]; then
     mkdir -p "$HOME/.local/bin"
 fi
 
+sudo apt install unzip -y
+
 curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
 oh-my-posh font install meslo
