@@ -1,5 +1,5 @@
 Init after fresh installation
 
 ```
-curl -fsSL https://github.com/TomRehbein/dev/blob/main/install | bash
+curl -fsSL https://raw.githubusercontent.com/TomRehbein/dev/main/install | bash
 ```
