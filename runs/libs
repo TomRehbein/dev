@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 sudo apt -y update
-sudo apt -y install git ripgrep jq tldr unzip build-essential tmux tree
+sudo apt -y install git ripgrep jq tldr unzip build-essential tmux tree htop
 
 git clone https://github.com/junegunn/fzf.git $HOME/personal/fzf
 $HOME/personal/fzf/install --all

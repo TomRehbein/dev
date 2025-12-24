@@ -8,6 +8,10 @@ if [ ! -d $HOME/personal ]; then
     mkdir $HOME/personal
 fi
 
+if [ ! -d $HOME/work ]; then
+    mkdir $HOME/work
+fi
+
 git clone https://github.com/TomRehbein/dev $HOME/personal/dev
 
 pushd $HOME/personal/dev
