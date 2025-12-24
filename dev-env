@@ -56,7 +56,7 @@ copy_file() {
 	execute cp $from $to/$name
 }
 
-if [ ! -d "$HOME/.confg" ]; then
+if [ ! -d "$HOME/.config" ]; then
     execute mkdir -p "$HOME/.config"
 fi
 

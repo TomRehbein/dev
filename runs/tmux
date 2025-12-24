@@ -2,11 +2,11 @@
 
 sudo apt install tmux
 
-TPM_DIR="$HOME/personal/dev/env/.config/tmux/plugins/tpm"
+export TMUX_PLUGIN_MANAGER_PATH="$HOME/personal/dev/env/.config/tmux/plugins"
+TPM_DIR="$TMUX_PLUGIN_MANAGER_PATH/tpm"
 
 if [ ! -d $TPM_DIR ]; then
     git clone https://github.com/tmux-plugins/tpm $TPM_DIR
 fi
 
-TMUX_PLUGIN_MANAGER_PATH="$HOME/personal/dev/env/.config/tmux/plugins" \
-    "$TPM_DIR/bin/install_plugins"
+"$TPM_DIR/bin/install_plugins"

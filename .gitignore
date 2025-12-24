@@ -1,4 +1,4 @@
 /test/
 main
 ascii/
-tmux/plugins/
+env/.config/tmux/plugins/
