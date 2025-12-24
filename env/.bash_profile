@@ -9,7 +9,7 @@ DEV_ENV=$PERSONAL/dev
 export GIT_EDITOR=$VIM
 export DEV_ENV_HOME="$HOME/personal/dev"
 
-bind -x '"\C-f": "~/.local/scripts/tmux-sessionizer"'
+bind -x '"\C-f": "~/.local/scripts/tmux-sessionizer"' 2> /dev/null
 
 addToPath() {
     if [[ "$PATH" != *"$1"* ]]; then
