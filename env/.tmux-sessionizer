@@ -5,5 +5,13 @@ if [[ "$(pwd)" == $HOME/personal ]]; then
     return
 fi
 
+tmux rename-window "dev"
+tmux split-window -h -p 75
+tmux send-keys -t 1 "nvim" C-m
+tmux select-pane -t 0
+
 tmux new-window -dn scratch
+
+tmux select-window -t 0
+
 clear
