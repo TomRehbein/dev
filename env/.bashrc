@@ -111,10 +111,9 @@ fi
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
-export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="$HOME/.config/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 export PATH=$PATH:~./local/bin
 export PATH=$PATH:~./local/scripts
-# eval "$(~/oh-my-posh/oh-my-posh init bash --config ~/oh-my-posh/the-unnamed.omp.json)"
 eval "$(oh-my-posh init bash --config ~/.cache/oh-my-posh/themes/the-unnamed.omp.json)"
