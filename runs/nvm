@@ -5,5 +5,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash 
 export NVM_DIR="$HOME/.config/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" > /dev/null 2>&1
 
+nvm install --lts > /dev/null 2>&1
 nvm install node --latest-npm > /dev/null 2>&1
 nvm use node > /dev/null 2>&1
+
