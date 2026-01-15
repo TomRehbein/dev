@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ $# -lt 2 ]]; then
+    echo "Error: Usage: $0 <work|personal> <ssh-url> [optional-folder-name]" > $2
+    exit 1
+fi
+
+TYPE="$1"
+SSH_URL="$2"
+CUSTOM_NAME="$3"
+
+case "$TYPE" in 
+    work)
+        BASE_DIR="$HOME/work"
+        ;;
+    personal)
+        BASE_DIR="$HOME/personal"
+        ;;
+    *)
+        echo "First parameter needs to be 'work' or 'personal'"
+        exit 1
+        ;;
+esac
+
+mkdir -p "$BASE_DIR"
+
+REPO_NAME=$(basename "$SSH_URL" .get)
+
+if [ -n "$CUSTOM_NAME" ]; then
+    TARGET_NAME="$CUSTOM_NAME"
+else
+    TARGET_NAME="$REPO_NAME"
+fi
+
+TARGET_DIR="$BASE_DIR/$TARGET_NAME"
+
+if [ -d "$TARGET_DIR" ]; then
+    echo "Directory $TARGET_DIR exists already! Exiting"
+    exit 0
+else
+    echo "Cloning $SSH_URL to $TARGET_DIR..."
+    git clone "$SSH_URL" "$TARGET_DIR"
+fi
+
+if command -v tmux-sessionizer $> /dev/null; then
+    exec tmux-sessionizer "$TARGET_DIR"
+else
+    echo "tmux-sessionizer not found in PATH"
+fi

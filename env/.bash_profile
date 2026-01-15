@@ -11,6 +11,26 @@ export DEV_ENV_HOME="$HOME/personal/dev"
 
 bind -x '"\C-f": "~/.local/scripts/tmux-sessionizer"' 2> /dev/null
 
+git-clone-work() {
+    read -p "(work) SSH URL: " url
+    if [ -z "$url" ]; then
+        return 1
+    fi
+    read -p "(work) Custom name (optional): " name
+    ~/.local/scripts/git-cloner work "$url" "$name"
+}
+
+git-clone-personal() {
+    read -p "(personal) SSH URL: " url
+    if [ -z "$url" ]; then
+        return 1
+    fi
+    read -p "(personal) Custom name (optional): " name
+    ~/.local/scripts/git-cloner personal "$url" "$name"
+}
+alias gw='git-clone-work'
+alias gp='git-clone-personal'
+
 addToPath() {
     if [[ "$PATH" != *"$1"* ]]; then
         export PATH=$PATH:$1
