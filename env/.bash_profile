@@ -28,8 +28,8 @@ git-clone-personal() {
     read -p "(personal) Custom name (optional): " name
     ~/.local/scripts/git-cloner personal "$url" "$name"
 }
-alias gw='git-clone-work'
-alias gp='git-clone-personal'
+bind -x '"\C-g\C-w": git-clone-work'
+bind -x '"\C-g\C-p": git-clone-personal'
 
 addToPath() {
     if [[ "$PATH" != *"$1"* ]]; then
