@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+export PYENV_ROOT="$HOME/.pyenv"
+
+# pyenv installieren
+curl https://pyenv.run | bash > /dev/null 2>&1
+
+# pyenv in PATH und Shell einbinden
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)" > /dev/null 2>&1
+eval "$(pyenv virtualenv-init -)" > /dev/null 2>&1
+
+# Neueste stabile Python-Version installieren
+pyenv install --skip-existing $(pyenv install --list | grep -E '^\s*[0-9]+\.[0-9]+\.[0-9]+$' | tail -1 | tr -d '[:space:]') > /dev/null 2>&1
+
+# Als global Version setzen
+pyenv global $(pyenv versions --bare | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1) > /dev/null 2>&1
+
+# pip aktualisieren
+pip install --upgrade pip > /dev/null 2>&1
