@@ -52,4 +52,8 @@ addToPath $HOME/.cargo/bin
 addToPath $HOME/.local/personal
 addToPath $HOME/.npm-global/bin
 
+export PYENV_ROOT="$HOME/.pyenv"
+addToPath $PYENV_ROOT/bin
+eval "$(pyenv init -)"
+
 [ -f ~/.bashrc ] && source ~/.bashrc
