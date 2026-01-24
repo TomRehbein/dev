@@ -3,7 +3,7 @@
 set -e
 
 if [[ $# -lt 2 ]]; then
-    echo "Error: Usage: $0 <work|personal> <ssh-url> [optional-folder-name]" > $2
+    echo "Error: Usage: $0 <work|personal> <ssh-url> [optional-folder-name]" >&2
     exit 1
 fi
 
@@ -26,7 +26,7 @@ esac
 
 mkdir -p "$BASE_DIR"
 
-REPO_NAME=$(basename "$SSH_URL" .get)
+REPO_NAME=$(basename "$SSH_URL" .git)
 
 if [ -n "$CUSTOM_NAME" ]; then
     TARGET_NAME="$CUSTOM_NAME"
@@ -44,7 +44,7 @@ else
     git clone "$SSH_URL" "$TARGET_DIR"
 fi
 
-if command -v tmux-sessionizer $> /dev/null; then
+if command -v tmux-sessionizer &> /dev/null; then
     exec tmux-sessionizer "$TARGET_DIR"
 else
     echo "tmux-sessionizer not found in PATH"
