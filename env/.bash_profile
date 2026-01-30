@@ -50,8 +50,8 @@ addToPathFront() {
 addToPathFront $HOME/.local/apps
 addToPathFront $HOME/.local/scripts
 addToPathFront $HOME/.local/bin
-addToPathFront $HOME/.npm/bin
 addToPathFront $HOME/.pyenv/bin
+addToPathFront $HOME/.nvm
 
 addToPath $HOME/.cargo/bin
 addToPath $HOME/.local/personal
