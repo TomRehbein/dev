@@ -2,12 +2,14 @@ export XDG_CONFIG_HOME=$HOME/.config
 VIM="nvim"
 
 PERSONAL=$HOME/personal
+WORK=$HOME/work
 DEV_ENV=$PERSONAL/dev
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 export GIT_EDITOR=$VIM
 export DEV_ENV_HOME="$HOME/personal/dev"
+export PYENV_ROOT="$HOME/.pyenv"
 
 bind -x '"\C-f": "~/.local/scripts/tmux-sessionizer"' 2> /dev/null
 
@@ -31,6 +33,8 @@ git-clone-personal() {
 bind -x '"\C-g\C-w": git-clone-work'
 bind -x '"\C-g\C-p": git-clone-personal'
 
+alias bco="npm run build-css-once && ~/csd2-linux --cssFile=./assets/packaged/index.min.css --output"
+
 addToPath() {
     if [[ "$PATH" != *"$1"* ]]; then
         export PATH=$PATH:$1
@@ -46,14 +50,13 @@ addToPathFront() {
 addToPathFront $HOME/.local/apps
 addToPathFront $HOME/.local/scripts
 addToPathFront $HOME/.local/bin
-addToPathFront $HOME/.local/npm/bin
+addToPathFront $HOME/.npm/bin
+addToPathFront $HOME/.pyenv/bin
 
 addToPath $HOME/.cargo/bin
 addToPath $HOME/.local/personal
 addToPath $HOME/.npm-global/bin
 
-export PYENV_ROOT="$HOME/.pyenv"
-addToPath $PYENV_ROOT/bin
 eval "$(pyenv init -)"
 
 [ -f ~/.bashrc ] && source ~/.bashrc
