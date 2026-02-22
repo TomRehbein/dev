@@ -1,4 +1,6 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
+
+set -e
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 dry="0"
@@ -38,30 +40,30 @@ copy_dir() {
 	from=$1
 	to=$2
 
-	pushd $from > /dev/null
+	pushd "$from" > /dev/null
 	dirs=$(find . -mindepth 1 -maxdepth 1 -type d)
 	for dir in $dirs; do
-		execute rm -rf $to/$dir
-		execute cp -r $dir $to/$dir
+		execute rm -rf "$to/$dir"
+		execute cp -r "$dir" "$to/$dir"
 	done
-	popd > /dev/null
+	popd > /dev/null || true
 }
 
 copy_file() {
 	from=$1
 	to=$2
-	name=$(basename $from)
+	name=$(basename "$from")
 
-	execute rm $to/$name 2> /dev/null
-	execute cp $from $to/$name
+	execute rm "$to/$name" 2> /dev/null
+	execute cp "$from" "$to/$name"
 }
 
 if [ ! -d "$HOME/.config" ]; then
     execute mkdir -p "$HOME/.config"
 fi
 
-copy_dir env/.config $XDG_CONFIG_HOME
-copy_dir env/.local $HOME/.local
+copy_dir env/.config "$XDG_CONFIG_HOME"
+copy_dir env/.local "$HOME/.local"
 
 copy_file env/.tmux-sessionizer $HOME
 copy_file env/.bashrc $HOME

@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 sudo apt install -y tmux
 
-TMUX_DIR="$HOME/personal/dev/env/.config/tmux"
+TMUX_DIR="$SCRIPT_DIR/../env/.config/tmux"
 TMUX_CONF="$TMUX_DIR/tmux.conf"
 TPM_DIR="$TMUX_DIR/plugins/tpm"
 
-if [ ! -d $TPM_DIR ]; then
-    git clone https://github.com/tmux-plugins/tpm $TPM_DIR
+if [ ! -d "$TPM_DIR" ]; then
+    git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
 fi
 
 mkdir -p ~/.config/tmux
@@ -15,5 +19,3 @@ ln -sf "$TMUX_CONF" ~/.config/tmux/tmux.conf
 
 export TMUX_PLUGIN_MANAGER_PATH="$TMUX_DIR/plugins"
 "$TPM_DIR/bin/install_plugins"
-
-rm ~/.config/tmux/tmux.conf

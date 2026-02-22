@@ -1,7 +1,3 @@
-[user]
-    name = TomRehbein
-    email = mastertomi01@googlemail.com
-
 [core]
     editor = nvim
     autocrlf = input

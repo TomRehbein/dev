@@ -11,7 +11,9 @@ export GIT_EDITOR=$VIM
 export DEV_ENV_HOME="$HOME/personal/dev"
 export PYENV_ROOT="$HOME/.pyenv"
 
-bind -x '"\C-f": "~/.local/scripts/tmux-sessionizer"' 2> /dev/null
+if [[ $- == *i* ]]; then
+    bind -x '"\C-f": "~/.local/scripts/tmux-sessionizer"' 2> /dev/null
+fi
 
 git-clone-work() {
     read -p "(work) SSH URL: " url
@@ -30,8 +32,10 @@ git-clone-personal() {
     read -p "(personal) Custom name (optional): " name
     ~/.local/scripts/git-cloner personal "$url" "$name"
 }
-bind -x '"\C-g\C-w": git-clone-work'
-bind -x '"\C-g\C-p": git-clone-personal'
+if [[ $- == *i* ]]; then
+    bind -x '"\C-g\C-w": git-clone-work'
+    bind -x '"\C-g\C-p": git-clone-personal'
+fi
 
 alias bco="npm run build-css-once && ~/csd2-linux --cssFile=./assets/packaged/index.min.css --output"
 

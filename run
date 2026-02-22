@@ -31,11 +31,11 @@ execute() {
 
 log "$script_dir -- $filter"
 
-cd $script_dir
+cd "$script_dir"
 scripts=$(find ./runs -maxdepth 1 -mindepth 1 -executable -type f)
 
 for script in $scripts; do
-	if echo "$script" | grep -qv "$filter"; then
+	if ! echo "$script" | grep -q "$filter"; then
 		log "filtering $script"
 		continue
 	fi

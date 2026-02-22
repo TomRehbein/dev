@@ -37,7 +37,7 @@ fi
 TARGET_DIR="$BASE_DIR/$TARGET_NAME"
 
 if [ -d "$TARGET_DIR" ]; then
-    echo "Directory $TARGET_DIR exists already! Exiting"
+    echo "Directory $TARGET_DIR exists already! Exiting" >&2
     exit 0
 else
     echo "Cloning $SSH_URL to $TARGET_DIR..."
@@ -47,5 +47,5 @@ fi
 if command -v tmux-sessionizer &> /dev/null; then
     exec tmux-sessionizer "$TARGET_DIR"
 else
-    echo "tmux-sessionizer not found in PATH"
+    echo "tmux-sessionizer not found in PATH" >&2
 fi
