@@ -1,0 +1,7 @@
+# ~/.bash_profile.local — machine/project-specific config, NOT committed
+#
+# Copy this file to ~/.bash_profile.local and adapt it.
+# It gets sourced automatically at the end of ~/.bash_profile.
+#
+# Example: project-specific aliases
+# alias bco="npm run build-css-once && ~/csd2-linux --cssFile=./assets/packaged/index.min.css --output"

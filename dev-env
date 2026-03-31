@@ -8,7 +8,7 @@ dry="0"
 if [ -z "$XDG_CONFIG_HOME" ]; then
 	echo "no xdg config home"
 	echo "using ~/.config"
-	XDG_CONFIG_HOME=$HOME/.config
+	XDG_CONFIG_HOME="$HOME/.config"
 fi
 
 while [[ $# > 0 ]]; do
@@ -36,22 +36,63 @@ execute() {
 
 log "-------------------- dev-env --------------------"
 
+# Replaces a directory entirely (rm + cp).
+# Use for dirs where we own all contents (tmux, nvim, etc.).
 copy_dir() {
-	from=$1
-	to=$2
+	local from="$1"
+	local to="$2"
 
+	execute mkdir -p "$to"
 	pushd "$from" > /dev/null
+
+	# Copy subdirectories (replace entirely)
+	local dirs
 	dirs=$(find . -mindepth 1 -maxdepth 1 -type d)
 	for dir in $dirs; do
-		execute rm -rf "$to/$dir"
-		execute cp -r "$dir" "$to/$dir"
+		local name="${dir#./}"
+		execute rm -rf "$to/$name"
+		execute cp -r "$dir" "$to/$name"
 	done
-	popd > /dev/null || true
+
+	# Copy files directly in this directory
+	local files
+	files=$(find . -mindepth 1 -maxdepth 1 -type f)
+	for file in $files; do
+		local name="${file#./}"
+		execute cp "$file" "$to/$name"
+	done
+
+	popd > /dev/null
+}
+
+# Copies only the files from a source dir into a target dir,
+# without touching other files already in the target.
+# Use for dirs we don't fully own (e.g. opencode has node_modules etc.).
+copy_dir_files_only() {
+	local from="$1"
+	local to="$2"
+
+	execute mkdir -p "$to"
+	pushd "$from" > /dev/null
+	local files
+	files=$(find . -mindepth 1 -maxdepth 1 -type f)
+	for file in $files; do
+		local name="${file#./}"
+		execute cp "$file" "$to/$name"
+	done
+	local subdirs
+	subdirs=$(find . -mindepth 1 -maxdepth 1 -type d)
+	for dir in $subdirs; do
+		local name="${dir#./}"
+		copy_dir_files_only "$dir" "$to/$name"
+	done
+	popd > /dev/null
 }
 
 copy_file() {
-	from=$1
-	to=$2
+	local from="$1"
+	local to="$2"
+	local name
 	name=$(basename "$from")
 
 	execute rm "$to/$name" 2> /dev/null
@@ -59,14 +100,23 @@ copy_file() {
 }
 
 if [ ! -d "$HOME/.config" ]; then
-    execute mkdir -p "$HOME/.config"
+	execute mkdir -p "$HOME/.config"
 fi
 
-copy_dir env/.config "$XDG_CONFIG_HOME"
-copy_dir env/.local "$HOME/.local"
+# Configs we fully own — replace entirely
+copy_dir "$script_dir/env/.config/tmux"             "$XDG_CONFIG_HOME/tmux"
+copy_dir "$script_dir/env/.config/nvim"             "$XDG_CONFIG_HOME/nvim"
+copy_dir "$script_dir/env/.config/tmux-sessionizer" "$XDG_CONFIG_HOME/tmux-sessionizer"
 
-copy_file env/.tmux-sessionizer $HOME
-copy_file env/.bashrc $HOME
-copy_file env/.bash_profile $HOME
-copy_file env/.inputrc $HOME
-copy_file env/.gitconfig $HOME
+# Configs we partially own — merge files only, don't touch the rest
+# copy_dir_files_only recurses into subdirs automatically
+copy_dir_files_only "$script_dir/env/.config/opencode" "$XDG_CONFIG_HOME/opencode"
+
+copy_dir "$script_dir/env/.local" "$HOME/.local"
+
+copy_file "$script_dir/env/.tmux-sessionizer" "$HOME"
+copy_file "$script_dir/env/.bashrc"           "$HOME"
+copy_file "$script_dir/env/.bash_profile"     "$HOME"
+copy_file "$script_dir/env/.inputrc"          "$HOME"
+copy_file "$script_dir/env/.gitconfig"        "$HOME"
+copy_file "$script_dir/env/.gitignore_global" "$HOME"

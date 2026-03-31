@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if dpkg -s obsidian &>/dev/null 2>&1; then
+    echo "obsidian already installed: $(dpkg -s obsidian | grep Version)"
+    exit 0
+fi
+
+echo "Fetching latest Obsidian release..."
+OBSIDIAN_VERSION=$(curl -fsSL "https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest" \
+    | grep '"tag_name"' \
+    | sed 's/.*"tag_name": *"v\([^"]*\)".*/\1/')
+
+if [ -z "$OBSIDIAN_VERSION" ]; then
+    echo "Error: Could not determine latest Obsidian version"
+    exit 1
+fi
+
+echo "Installing Obsidian v${OBSIDIAN_VERSION}..."
+DEB_URL="https://github.com/obsidianmd/obsidian-releases/releases/download/v${OBSIDIAN_VERSION}/obsidian_${OBSIDIAN_VERSION}_amd64.deb"
+TMP_FILE=$(mktemp --suffix=.deb)
+
+curl -fsSL "$DEB_URL" -o "$TMP_FILE"
+sudo dpkg -i "$TMP_FILE"
+rm -f "$TMP_FILE"
+
+echo "Obsidian v${OBSIDIAN_VERSION} installed."

@@ -2,3 +2,4 @@
 main
 ascii/
 env/.config/tmux/plugins/
+env/.bash_profile.local

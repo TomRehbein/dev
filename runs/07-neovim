@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
-
 sudo apt install -y cmake gettext lua5.1 liblua5.1-0-dev
 
 if [ ! -d "$HOME/personal/neovim" ]; then
-    git clone -b release-0.11 https://github.com/neovim/neovim.git "$HOME/personal/neovim"
+    git clone https://github.com/neovim/neovim.git "$HOME/personal/neovim"
+else
+    git -C "$HOME/personal/neovim" pull --ff-only
 fi
 
 cd "$HOME/personal/neovim"

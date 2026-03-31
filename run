@@ -35,7 +35,7 @@ cd "$script_dir"
 scripts=$(find ./runs -maxdepth 1 -mindepth 1 -executable -type f)
 
 for script in $scripts; do
-	if ! echo "$script" | grep -q "$filter"; then
+	if [ -n "$filter" ] && ! echo "$script" | grep -q "$filter"; then
 		log "filtering $script"
 		continue
 	fi
