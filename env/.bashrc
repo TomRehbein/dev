@@ -66,6 +66,7 @@ fi
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+alias bco="npm run build-css-once && ~/csd2-linux --cssFile=./assets/packaged/index.min.css --output"
 
 [ -f ~/.bash_aliases ] && source ~/.bash_aliases
 

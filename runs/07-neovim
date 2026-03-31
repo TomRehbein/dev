@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 sudo apt install -y cmake gettext lua5.1 liblua5.1-0-dev
 
 if [ ! -d "$HOME/personal/neovim" ]; then

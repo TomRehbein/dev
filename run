@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 filter=""
 dry="0"
@@ -32,7 +34,7 @@ execute() {
 log "$script_dir -- $filter"
 
 cd "$script_dir"
-scripts=$(find ./runs -maxdepth 1 -mindepth 1 -executable -type f)
+scripts=$(find ./runs -maxdepth 1 -mindepth 1 -executable -type f | sort)
 
 for script in $scripts; do
 	if [ -n "$filter" ] && ! echo "$script" | grep -q "$filter"; then

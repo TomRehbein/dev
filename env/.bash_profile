@@ -68,8 +68,6 @@ git-clone-personal() {
     ~/.local/scripts/git-cloner personal "$url" "$name"
 }
 
-alias bco="npm run build-css-once && ~/csd2-linux --cssFile=./assets/packaged/index.min.css --output"
-
 # ---- Local overrides (not committed) ----
 
 [ -f ~/.bash_profile.local ] && source ~/.bash_profile.local

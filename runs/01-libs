@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 sudo apt -y update
 sudo apt -y install git ripgrep jq tldr unzip build-essential tmux tree htop
 
@@ -7,4 +9,6 @@ if [ ! -d "$HOME/personal/fzf" ]; then
     git clone https://github.com/junegunn/fzf.git "$HOME/personal/fzf"
 fi
 
-"$HOME/personal/fzf/install" --all
+if ! command -v fzf &>/dev/null; then
+    "$HOME/personal/fzf/install" --all
+fi
