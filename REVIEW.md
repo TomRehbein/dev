@@ -47,10 +47,9 @@
 - `TMUX_DIR="$HOME/personal/dev/env/.config/tmux"` ist absolut
 - Sollte relativ zum Script sein: `$(dirname "$0")/../env/.config/tmux`
 
-### 9. `xclip` nicht installiert aber in tmux.conf genutzt
-- **Datei:** `env/.config/tmux/tmux.conf`, Zeile 27
-- `runs/libs` installiert `xclip` nicht
-- Tmux copy-to-clipboard schlaegt fehl
+### 9. ~~`xclip` nicht installiert aber in tmux.conf genutzt~~ ✓ DONE
+- `copy-pipe-and-cancel 'xclip ...'` ersetzt durch `copy-selection-and-cancel`
+- `tmux-yank` Plugin übernimmt Clipboard-Integration automatisch
 
 ---
 
@@ -73,39 +72,31 @@
 
 ## Kleinere Probleme & Verbesserungen
 
-### 12. `addToPathFront` Logik unklar
-- **Datei:** `env/.bash_profile`, Zeilen 40-44
-- `||`-Bedingung fuegt immer zum PATH hinzu wenn `$2` gesetzt ist
-- Vermutlich sollte `&&` statt `||` verwendet werden
+### 12. ~~`addToPathFront` Logik unklar~~ ✓ DONE
+- Force-Flag `$2` entfernt, Funktion prüft nur noch ob Pfad bereits in PATH ist
 
-### 13. Hardcoded NVM-Version
-- **Datei:** `runs/nvm`, Zeile 5
-- Version `v0.40.3` ist fest eingetragen
-- Schlaegt fehl wenn GitHub alte Releases entfernt
+### 13. ~~Hardcoded NVM-Version~~ ✓ DONE
+- Version wird jetzt dynamisch per GitHub API geholt (`releases/latest`)
 
-### 14. `curl | bash` ohne Verifikation
-- **Dateien:** `runs/nvm`, `runs/oh-my-posh`, `runs/pyenv`, `runs/rust`
-- Downloads werden direkt ausgefuehrt ohne Hash-Pruefung
-- Sicherheitsrisiko bei Man-in-the-Middle
+### 14. `curl | bash` ohne Verifikation — bewusst nicht umgesetzt
+- Kein offizieller Hash-Support durch die betroffenen Projekte
+- Alle Scripts haben `set -e` und HTTPS; akzeptiertes Risiko für persönliches Dotfile-Repo
 
 ### 15. Persoenliche E-Mail im Repo
 - **Datei:** `env/.gitconfig`, Zeilen 1-3
 - `mastertomi01@googlemail.com` hardcoded
 - Besser in `.gitconfig.local` auslagern und per `[include]` einbinden
 
-### 16. Filter in `run` akzeptiert nur letzten Parameter
-- **Datei:** `run`, Zeilen 4-14
-- `./run foo bar` ignoriert `foo`, setzt nur `filter="bar"`
+### 16. ~~Filter in `run` akzeptiert nur letzten Parameter~~ ✓ DONE
+- `filter` durch `filters=()` Array ersetzt; `./run foo bar` führt jetzt beide aus
 
 ### 17. Kein Error Handling in Installationsscripts
 - **Dateien:** alle `runs/*`
 - Fehler werden mit `2>/dev/null` verschluckt
 - Debugging bei fehlgeschlagenen Installationen sehr schwierig
 
-### 18. Keine Input-Validierung in `git-cloner`
-- **Datei:** `env/.local/scripts/git-cloner`, Zeilen 29-35
-- SSH-URL wird nicht auf gueltiges Format geprueft
+### 18. ~~Keine Input-Validierung in `git-cloner`~~ ✓ DONE
+- Regex-Check für SSH-URL Format `git@host:user/repo.git` ergänzt
 
-### 19. Inkonsistente Error-Messages
-- **Datei:** `env/.local/scripts/git-cloner`
-- Manche Fehler gehen nach stderr (`>&2`), manche nach stdout
+### 19. ~~Inkonsistente Error-Messages~~ ✓ DONE
+- Alle Fehlermeldungen gehen jetzt nach stderr (`>&2`)

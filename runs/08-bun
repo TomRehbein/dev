@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 if command -v bun &> /dev/null; then
     echo "bun already installed: $(bun --version)"
     exit 0

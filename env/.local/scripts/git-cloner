@@ -11,6 +11,11 @@ TYPE="$1"
 SSH_URL="$2"
 CUSTOM_NAME="$3"
 
+if [[ ! "$SSH_URL" =~ ^git@[a-zA-Z0-9._-]+:[a-zA-Z0-9._/-]+\.git$ ]]; then
+    echo "Error: Invalid SSH URL format. Expected: git@host:user/repo.git" >&2
+    exit 1
+fi
+
 case "$TYPE" in 
     work)
         BASE_DIR="$HOME/work"
@@ -19,7 +24,7 @@ case "$TYPE" in
         BASE_DIR="$HOME/personal"
         ;;
     *)
-        echo "First parameter needs to be 'work' or 'personal'"
+        echo "First parameter needs to be 'work' or 'personal'" >&2
         exit 1
         ;;
 esac

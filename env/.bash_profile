@@ -22,8 +22,7 @@ addToPath() {
 }
 
 addToPathFront() {
-    # Force prepend if $2 is set, otherwise only if not already in PATH
-    if [[ -n "$2" ]] || [[ "$PATH" != *"$1"* ]]; then
+    if [[ "$PATH" != *"$1"* ]]; then
         export PATH="$1:$PATH"
     fi
 }

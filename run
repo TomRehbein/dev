@@ -3,14 +3,14 @@
 set -e
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-filter=""
+filters=()
 dry="0"
 
 while [[ $# > 0 ]]; do
 	if [[ $1 == "--dry" ]]; then
 		dry="1"
 	else
-		filter="$1"
+		filters+=("$1")
 	fi
 	shift
 done
@@ -31,15 +31,21 @@ execute() {
 	"$@"
 }
 
-log "$script_dir -- $filter"
+log "$script_dir -- filters: ${filters[*]}"
 
 cd "$script_dir"
 scripts=$(find ./runs -maxdepth 1 -mindepth 1 -executable -type f | sort)
 
 for script in $scripts; do
-	if [ -n "$filter" ] && ! echo "$script" | grep -q "$filter"; then
-		log "filtering $script"
-		continue
+	if [ ${#filters[@]} -gt 0 ]; then
+		match=false
+		for f in "${filters[@]}"; do
+			echo "$script" | grep -q "$f" && match=true && break
+		done
+		if ! $match; then
+			log "filtering $script"
+			continue
+		fi
 	fi
 
 	execute ./$script
