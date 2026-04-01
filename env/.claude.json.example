@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "tavily": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "tavily-mcp@latest"],
+      "env": {
+        "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY"
+      }
+    },
+    "mathematics": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@opencode-ai/mathematics-mcp@latest"]
+    }
+  }
+}

@@ -112,6 +112,9 @@ copy_dir "$script_dir/env/.config/tmux-sessionizer" "$XDG_CONFIG_HOME/tmux-sessi
 # copy_dir_files_only recurses into subdirs automatically
 copy_dir_files_only "$script_dir/env/.config/opencode" "$XDG_CONFIG_HOME/opencode"
 
+# Claude Code config — fully owned, replace entirely
+copy_dir "$script_dir/env/.claude" "$HOME/.claude"
+
 copy_dir "$script_dir/env/.local" "$HOME/.local"
 
 copy_file "$script_dir/env/.tmux-sessionizer" "$HOME"
