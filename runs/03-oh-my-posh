@@ -7,11 +7,11 @@ if command -v oh-my-posh &>/dev/null; then
     exit 0
 fi
 
-if [ ! -d "$HOME/.local/bin" ]; then
-    mkdir -p "$HOME/.local/bin"
-fi
+mkdir -p "$HOME/.local/bin"
 
 sudo apt install unzip -y
 
-curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
-"$HOME/.local/bin/oh-my-posh" font install meslo
+curl -s https://ohmyposh.dev/install.sh | bash -s -- -d "$HOME/.local/bin"
+
+export PATH="$HOME/.local/bin:$PATH"
+oh-my-posh font install meslo
