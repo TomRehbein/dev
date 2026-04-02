@@ -39,11 +39,12 @@ addToPath      "$HOME/.npm-global/bin"
 
 # Tools
 addToPath "$BUN_INSTALL/bin"
-addToPath "$HOME/.opencode/bin"
 
 # ---- Tool inits (run once at login) ----
 
 eval "$(pyenv init -)"
+
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # ---- Keybindings ----
 

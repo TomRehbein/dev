@@ -8,3 +8,4 @@ if command -v opencode &> /dev/null; then
 fi
 
 curl -fsSL https://opencode.ai/install | bash
+export PATH="$HOME/.local/bin:$PATH"
