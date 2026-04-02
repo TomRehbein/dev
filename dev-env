@@ -99,6 +99,25 @@ copy_file() {
 	execute cp "$from" "$to/$name"
 }
 
+# Copies a file only if the destination does not already exist.
+# Use for machine-local config templates (.gitconfig.local, .gitmessage, etc.).
+copy_file_if_missing() {
+	local from="$1"
+	local to="$2"
+	local name
+	name=$(basename "$from")
+
+	if [ -f "$to/$name" ]; then
+		log "skip (already exists): $to/$name"
+		return
+	fi
+	log "deploy template: $to/$name"
+	if [[ $dry == "1" ]]; then
+		return
+	fi
+	cp "$from" "$to/$name"
+}
+
 if [ ! -d "$HOME/.config" ]; then
 	execute mkdir -p "$HOME/.config"
 fi
@@ -107,6 +126,7 @@ fi
 copy_dir "$script_dir/env/.config/tmux"             "$XDG_CONFIG_HOME/tmux"
 copy_dir "$script_dir/env/.config/nvim"             "$XDG_CONFIG_HOME/nvim"
 copy_dir "$script_dir/env/.config/tmux-sessionizer" "$XDG_CONFIG_HOME/tmux-sessionizer"
+copy_dir "$script_dir/env/.config/omp"              "$XDG_CONFIG_HOME/omp"
 
 # Configs we partially own — merge files only, don't touch the rest
 # copy_dir_files_only recurses into subdirs automatically
@@ -123,3 +143,16 @@ copy_file "$script_dir/env/.bash_profile"     "$HOME"
 copy_file "$script_dir/env/.inputrc"          "$HOME"
 copy_file "$script_dir/env/.gitconfig"        "$HOME"
 copy_file "$script_dir/env/.gitignore_global" "$HOME"
+
+# Machine-local templates — only deployed if the target does not yet exist
+copy_file_if_missing "$script_dir/env/.gitconfig.local.example" "$HOME"
+copy_file_if_missing "$script_dir/env/.gitmessage.example"      "$HOME"
+
+# Rename examples to actual filenames on first deploy
+if [[ $dry == "0" ]]; then
+	[ ! -f "$HOME/.gitconfig.local" ] && mv "$HOME/.gitconfig.local.example" "$HOME/.gitconfig.local" 2>/dev/null || true
+	[ ! -f "$HOME/.gitmessage"      ] && mv "$HOME/.gitmessage.example"      "$HOME/.gitmessage"      2>/dev/null || true
+fi
+
+# Neovim requires this directory for persistent undo history
+execute mkdir -p "$HOME/.vim/undodir"

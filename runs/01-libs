@@ -3,7 +3,7 @@
 set -e
 
 sudo apt -y update
-sudo apt -y install git ripgrep jq tldr unzip build-essential tmux tree htop
+sudo apt -y install git ripgrep jq tldr unzip build-essential tmux tree htop btop git-delta
 
 if [ ! -d "$HOME/personal/fzf" ]; then
     git clone https://github.com/junegunn/fzf.git "$HOME/personal/fzf"

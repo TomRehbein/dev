@@ -66,7 +66,6 @@ fi
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
-alias bco="npm run build-css-once && ~/csd2-linux --cssFile=./assets/packaged/index.min.css --output"
 
 [ -f ~/.bash_aliases ] && source ~/.bash_aliases
 
@@ -93,5 +92,5 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 # ---- Prompt: oh-my-posh ----
 
 if command -v oh-my-posh &>/dev/null; then
-    eval "$(oh-my-posh init bash --config ~/.cache/oh-my-posh/themes/the-unnamed.omp.json)"
+    eval "$(oh-my-posh init bash --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
 fi

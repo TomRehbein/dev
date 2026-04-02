@@ -1,0 +1,6 @@
+# Machine-local Git config — copy this to ~/.gitconfig.local and fill in your details.
+# This file is included by ~/.gitconfig via [include] and is NOT tracked in git.
+
+[user]
+    name = Your Name
+    email = your@email.com

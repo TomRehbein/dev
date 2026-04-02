@@ -1,0 +1,11 @@
+# Commit message template — copy this to ~/.gitmessage.
+# Lines starting with '#' are ignored by git.
+#
+# Format: <type>: <short summary> (max 72 chars)
+# Types: feat, fix, refactor, docs, test, chore, style, perf
+#
+# Body (optional, wrap at 72 chars):
+#
+#
+# Footer (optional — issue refs, breaking changes):
+#

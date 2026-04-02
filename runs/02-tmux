@@ -15,7 +15,6 @@ if [ ! -d "$TPM_DIR" ]; then
 fi
 
 mkdir -p ~/.config/tmux
-ln -sf "$TMUX_CONF" ~/.config/tmux/tmux.conf
 
 export TMUX_PLUGIN_MANAGER_PATH="$TMUX_DIR/plugins"
 "$TPM_DIR/bin/install_plugins"

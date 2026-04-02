@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 
+set -e
+
 if command -v playwright-cli &> /dev/null; then
     echo "playwright-cli already installed: $(playwright-cli --version 2>/dev/null || echo 'unknown version')"
     exit 0
 fi
+
+# NVM does not export npm to PATH in non-interactive subshells — set it explicitly
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+export PATH="$NVM_DIR/versions/node/$(ls "$NVM_DIR/versions/node" | sort -V | tail -1)/bin:$PATH"
 
 npm install -g @playwright/cli@latest

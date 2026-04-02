@@ -44,8 +44,10 @@ vim.keymap.set('n', 'Q', '<nop>')
 vim.keymap.set('n', '<C-f>', '<cmd>silent !tmux display-popup -E -w 80%% -h 80%% "bash -lc tmux-sessionizer"<CR>')
 
 -- quick fix nav
-vim.keymap.set('n', '<C-k>', '<cmd>cnext<CR>zz')
-vim.keymap.set('n', '<C-j>', '<cmd>cprev<CR>zz')
+-- Note: <C-j>/<C-k> are reserved for vim-tmux-navigator and window movement (init.lua).
+-- Use <C-n>/<C-p> for quickfix navigation to avoid conflicts.
+vim.keymap.set('n', '<C-n>', '<cmd>cnext<CR>zz')
+vim.keymap.set('n', '<C-p>', '<cmd>cprev<CR>zz')
 vim.keymap.set('n', '<leader>k', '<cmd>lnext<CR>zz')
 vim.keymap.set('n', '<leader>j', '<cmd>lprev<CR>zz')
 
