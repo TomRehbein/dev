@@ -1,0 +1,248 @@
+#!/usr/bin/env bash
+
+set -e
+
+# ---------------------------------------------------------------------------
+# 99-checks — verify that all dev-env tools are installed as Linux binaries.
+#
+# On WSL, Windows binaries (e.g. fzf.exe) can appear in PATH via the Windows
+# PATH passthrough. Each check uses an explicit Linux path where applicable so
+# a Windows version never masks a missing Linux install.
+#
+# Exit codes:
+#   0 — all checks passed
+#   1 — one or more checks failed
+# ---------------------------------------------------------------------------
+
+PASS=0
+FAIL=0
+WARN=0
+
+# Detect WSL
+IS_WSL=false
+if grep -qi microsoft /proc/version 2>/dev/null; then
+    IS_WSL=true
+fi
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+_ok() {
+    local label="$1" detail="$2"
+    printf "${GREEN}[OK]${RESET}   %-16s %s\n" "$label" "$detail"
+    PASS=$(( PASS + 1 ))
+}
+
+_fail() {
+    local label="$1" detail="$2"
+    printf "${RED}[FAIL]${RESET} %-16s %s\n" "$label" "$detail"
+    FAIL=$(( FAIL + 1 ))
+}
+
+_warn() {
+    local label="$1" detail="$2"
+    printf "${YELLOW}[WARN]${RESET} %-16s %s\n" "$label" "$detail"
+    WARN=$(( WARN + 1 ))
+}
+
+# Check whether a Windows .exe version exists somewhere in PATH for a given
+# command name. Prints the path if found, empty string otherwise.
+_windows_version() {
+    local name="$1"
+    local found
+    found="$(command -v "${name}.exe" 2>/dev/null || true)"
+    if [ -z "$found" ]; then
+        # Also catch bare 'name' that resolves to /mnt/c/...
+        found="$(command -v "$name" 2>/dev/null || true)"
+        [[ "$found" == /mnt/* ]] || found=""
+    fi
+    echo "$found"
+}
+
+# check_bin LABEL LINUX_PATH
+#   Passes when LINUX_PATH is an executable file.
+#   On WSL failure: also checks for a Windows version in PATH.
+check_bin() {
+    local label="$1" path="$2"
+    if [ -x "$path" ]; then
+        _ok "$label" "$path"
+    else
+        if $IS_WSL; then
+            local win
+            win="$(_windows_version "$label")"
+            if [ -n "$win" ]; then
+                _warn "$label" "Linux binary not found — Windows version in PATH: $win"
+                return
+            fi
+        fi
+        _fail "$label" "not installed ($path not found)"
+    fi
+}
+
+# check_apt LABEL PACKAGE
+#   Uses dpkg to confirm the package is installed; also verifies the binary
+#   resolves to a path outside /mnt (i.e. not a Windows binary).
+check_apt() {
+    local label="$1" pkg="$2" cmd="${3:-$1}"
+    if dpkg -s "$pkg" &>/dev/null 2>&1; then
+        local resolved
+        resolved="$(command -v "$cmd" 2>/dev/null || true)"
+        if [[ "$resolved" == /mnt/* ]]; then
+            _warn "$label" "dpkg says installed but binary resolves to Windows path: $resolved"
+        else
+            _ok "$label" "${resolved:-installed via dpkg}"
+        fi
+    else
+        if $IS_WSL; then
+            local win
+            win="$(_windows_version "$cmd")"
+            if [ -n "$win" ]; then
+                _warn "$label" "not installed via apt — Windows version in PATH: $win"
+                return
+            fi
+        fi
+        _fail "$label" "not installed (dpkg: $pkg)"
+    fi
+}
+
+# check_file LABEL PATH [description]
+#   Passes when PATH exists (file or directory).
+check_file() {
+    local label="$1" path="$2" desc="${3:-$2}"
+    if [ -e "$path" ]; then
+        _ok "$label" "$desc"
+    else
+        _fail "$label" "not found: $path"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# Latest nvm node version helper
+# ---------------------------------------------------------------------------
+_nvm_latest_node() {
+    local nvm_versions_dir="$HOME/.nvm/versions/node"
+    if [ -d "$nvm_versions_dir" ]; then
+        ls "$nvm_versions_dir" 2>/dev/null | sort -V | tail -1
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# Checks
+# ---------------------------------------------------------------------------
+
+echo ""
+if $IS_WSL; then
+    printf "${BOLD}Checking dev environment (WSL detected)${RESET}\n"
+else
+    printf "${BOLD}Checking dev environment${RESET}\n"
+fi
+printf '%0.s─' {1..50}
+echo ""
+echo ""
+
+# --- apt packages (01-libs, 02-tmux) ---------------------------------------
+echo "  apt packages"
+check_apt "git"     "git"
+check_apt "rg"      "ripgrep"       "rg"
+check_apt "jq"      "jq"
+check_apt "delta"   "git-delta"     "delta"
+check_apt "tldr"    "tldr"
+check_apt "unzip"   "unzip"
+check_apt "tree"    "tree"
+check_apt "htop"    "htop"
+check_apt "btop"    "btop"
+check_apt "tmux"    "tmux"
+
+echo ""
+
+# --- explicit Linux binaries ($HOME/.local/bin, etc.) ----------------------
+echo "  explicit Linux binaries"
+check_bin "oh-my-posh" "$HOME/.local/bin/oh-my-posh"
+check_bin "opencode"   "$HOME/.local/bin/opencode"
+check_bin "claude"     "$HOME/.local/bin/claude"
+check_bin "bun"        "$HOME/.bun/bin/bun"
+check_bin "uv"         "$HOME/.local/bin/uv"
+check_bin "rustup"     "$HOME/.cargo/bin/rustup"
+check_bin "cargo"      "$HOME/.cargo/bin/cargo"
+check_bin "nvim"       "/usr/local/bin/nvim"
+
+echo ""
+
+# --- version managers & their shims ----------------------------------------
+echo "  version managers"
+
+# nvm — shell function, no binary; check the nvm.sh loader
+check_file "nvm" "$HOME/.nvm/nvm.sh" "$HOME/.nvm/nvm.sh"
+
+# node/npm via nvm
+NVM_NODE_VERSION="$(_nvm_latest_node)"
+if [ -n "$NVM_NODE_VERSION" ]; then
+    NVM_BIN="$HOME/.nvm/versions/node/${NVM_NODE_VERSION}/bin"
+    check_bin "node" "$NVM_BIN/node"
+    check_bin "npm"  "$NVM_BIN/npm"
+else
+    _fail "node" "no nvm node versions found under $HOME/.nvm/versions/node"
+    _fail "npm"  "no nvm node versions found under $HOME/.nvm/versions/node"
+    FAIL=$(( FAIL + 2 ))
+fi
+
+# pyenv
+check_bin  "pyenv"  "$HOME/.pyenv/bin/pyenv"
+check_file "python" "$HOME/.pyenv/shims/python" "$HOME/.pyenv/shims/python (pyenv shim)"
+
+# fzf — installed from source into $HOME/personal/fzf
+check_bin "fzf" "$HOME/personal/fzf/bin/fzf"
+
+echo ""
+
+# --- npm globals (13-playwright-cli) ----------------------------------------
+echo "  npm globals"
+
+if [ -n "$NVM_NODE_VERSION" ]; then
+    check_bin "playwright-cli" "$HOME/.nvm/versions/node/${NVM_NODE_VERSION}/bin/playwright-cli"
+else
+    _fail "playwright-cli" "cannot check — no nvm node version found"
+    FAIL=$(( FAIL + 1 ))
+fi
+
+echo ""
+
+# --- dpkg (.deb installs) ---------------------------------------------------
+echo "  dpkg packages"
+
+if dpkg -s obsidian &>/dev/null 2>&1; then
+    VERSION="$(dpkg -s obsidian 2>/dev/null | grep '^Version:' | awk '{print $2}')"
+    _ok "obsidian" "installed via dpkg (v${VERSION})$(${IS_WSL} && echo ' — launch with WSLg')"
+else
+    if $IS_WSL; then
+        _fail "obsidian" "not installed — install runs/12-obsidian (requires WSLg for GUI)"
+    else
+        _fail "obsidian" "not installed (dpkg: obsidian)"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Summary
+# ---------------------------------------------------------------------------
+TOTAL=$(( PASS + FAIL + WARN ))
+echo ""
+printf '%0.s─' {1..50}
+echo ""
+
+if [ "$FAIL" -eq 0 ] && [ "$WARN" -eq 0 ]; then
+    printf "${GREEN}${BOLD}All $TOTAL checks passed.${RESET}\n"
+elif [ "$FAIL" -eq 0 ]; then
+    printf "${YELLOW}${BOLD}${PASS}/${TOTAL} checks passed, ${WARN} warning(s).${RESET}\n"
+else
+    printf "${RED}${BOLD}${PASS}/${TOTAL} checks passed — ${FAIL} failed, ${WARN} warning(s).${RESET}\n"
+fi
+echo ""
+
+[ "$FAIL" -eq 0 ]
