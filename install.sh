@@ -25,8 +25,8 @@ if [ ! -d "$HOME/personal/dev" ]; then
 fi
 
 pushd "$HOME/personal/dev"
-./dev-env
 ./run
+./dev-env
 popd
 
 echo ""
