@@ -95,7 +95,7 @@ copy_file() {
 	local name
 	name=$(basename "$from")
 
-	execute rm "$to/$name" 2> /dev/null
+	execute rm "$to/$name" 2>/dev/null || true
 	execute cp "$from" "$to/$name"
 }
 
@@ -122,6 +122,15 @@ if [ ! -d "$HOME/.config" ]; then
 	execute mkdir -p "$HOME/.config"
 fi
 
+# Dotfiles — deployed first so they are always written, independent of
+# any directory-copy operations that might fail and abort the script.
+copy_file "$script_dir/env/.tmux-sessionizer" "$HOME"
+copy_file "$script_dir/env/.bashrc"           "$HOME"
+copy_file "$script_dir/env/.bash_profile"     "$HOME"
+copy_file "$script_dir/env/.inputrc"          "$HOME"
+copy_file "$script_dir/env/.gitconfig"        "$HOME"
+copy_file "$script_dir/env/.gitignore_global" "$HOME"
+
 # Configs we fully own — replace entirely
 copy_dir "$script_dir/env/.config/tmux"             "$XDG_CONFIG_HOME/tmux"
 copy_dir "$script_dir/env/.config/nvim"             "$XDG_CONFIG_HOME/nvim"
@@ -135,14 +144,9 @@ copy_dir_files_only "$script_dir/env/.config/opencode" "$XDG_CONFIG_HOME/opencod
 # Claude Code config — fully owned, replace entirely
 copy_dir "$script_dir/env/.claude" "$HOME/.claude"
 
-copy_dir "$script_dir/env/.local" "$HOME/.local"
-
-copy_file "$script_dir/env/.tmux-sessionizer" "$HOME"
-copy_file "$script_dir/env/.bashrc"           "$HOME"
-copy_file "$script_dir/env/.bash_profile"     "$HOME"
-copy_file "$script_dir/env/.inputrc"          "$HOME"
-copy_file "$script_dir/env/.gitconfig"        "$HOME"
-copy_file "$script_dir/env/.gitignore_global" "$HOME"
+# ~/.local is not exclusively ours (e.g. ~/.local/bin contains oh-my-posh),
+# so use copy_dir_files_only to avoid deleting unrelated files.
+copy_dir_files_only "$script_dir/env/.local" "$HOME/.local"
 
 # Machine-local templates — only deployed if the target does not yet exist
 copy_file_if_missing "$script_dir/env/.gitconfig.local.example" "$HOME"
