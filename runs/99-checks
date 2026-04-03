@@ -212,22 +212,6 @@ else
     FAIL=$(( FAIL + 1 ))
 fi
 
-echo ""
-
-# --- dpkg (.deb installs) ---------------------------------------------------
-echo "  dpkg packages"
-
-if dpkg -s obsidian &>/dev/null 2>&1; then
-    VERSION="$(dpkg -s obsidian 2>/dev/null | grep '^Version:' | awk '{print $2}')"
-    _ok "obsidian" "installed via dpkg (v${VERSION})$(${IS_WSL} && echo ' — launch with WSLg')"
-else
-    if $IS_WSL; then
-        _fail "obsidian" "not installed — install runs/12-obsidian (requires WSLg for GUI)"
-    else
-        _fail "obsidian" "not installed (dpkg: obsidian)"
-    fi
-fi
-
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
