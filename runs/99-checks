@@ -86,6 +86,28 @@ check_bin() {
     fi
 }
 
+# check_bin_multi LABEL PATH...
+#   Passes when any of the given paths is an executable file (first match wins).
+#   On WSL failure: also checks for a Windows version in PATH.
+check_bin_multi() {
+    local label="$1"; shift
+    for path in "$@"; do
+        if [ -x "$path" ]; then
+            _ok "$label" "$path"
+            return
+        fi
+    done
+    if $IS_WSL; then
+        local win
+        win="$(_windows_version "$label")"
+        if [ -n "$win" ]; then
+            _warn "$label" "Linux binary not found — Windows version in PATH: $win"
+            return
+        fi
+    fi
+    _fail "$label" "not installed (checked: $*)"
+}
+
 # check_apt LABEL PACKAGE
 #   Uses dpkg to confirm the package is installed; also verifies the binary
 #   resolves to a path outside /mnt (i.e. not a Windows binary).
@@ -165,7 +187,7 @@ echo ""
 # --- explicit Linux binaries ($HOME/.local/bin, etc.) ----------------------
 echo "  explicit Linux binaries"
 check_bin "oh-my-posh" "$HOME/.local/bin/oh-my-posh"
-check_bin "opencode"   "$HOME/.local/bin/opencode"
+check_bin_multi "opencode"   "$HOME/.local/bin/opencode" "$HOME/.opencode/bin/opencode"
 check_bin "claude"     "$HOME/.local/bin/claude"
 check_bin "bun"        "$HOME/.bun/bin/bun"
 check_bin "uv"         "$HOME/.local/bin/uv"
