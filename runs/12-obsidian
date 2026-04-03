@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 if dpkg -s obsidian &>/dev/null 2>&1; then
     echo "obsidian already installed: $(dpkg -s obsidian | grep Version)"
     exit 0
@@ -24,3 +26,7 @@ sudo dpkg -i "$TMP_FILE"
 rm -f "$TMP_FILE"
 
 echo "Obsidian v${OBSIDIAN_VERSION} installed."
+echo ""
+echo "  To enable the Obsidian CLI, open Obsidian and go to:"
+echo "  Settings → General → Enable 'Command line interface'"
+echo "  (requires Obsidian installer version 1.12 or later)"

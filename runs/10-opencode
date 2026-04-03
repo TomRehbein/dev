@@ -2,10 +2,12 @@
 
 set -e
 
+# opencode installs to ~/.local/bin — ensure it is in PATH before checking
+export PATH="$HOME/.local/bin:$PATH"
+
 if command -v opencode &> /dev/null; then
     echo "opencode already installed: $(opencode --version 2>/dev/null || echo 'unknown version')"
     exit 0
 fi
 
 curl -fsSL https://opencode.ai/install | bash
-export PATH="$HOME/.local/bin:$PATH"

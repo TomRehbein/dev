@@ -7,8 +7,11 @@ if command -v playwright-cli &> /dev/null; then
     exit 0
 fi
 
-# NVM does not export npm to PATH in non-interactive subshells — set it explicitly
+# NVM does not export npm to PATH in non-interactive subshells — set it explicitly.
+# Guard against the versions/node directory not existing yet (e.g. nvm not yet used).
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-export PATH="$NVM_DIR/versions/node/$(ls "$NVM_DIR/versions/node" | sort -V | tail -1)/bin:$PATH"
+if [ -d "$NVM_DIR/versions/node" ] && [ -n "$(ls "$NVM_DIR/versions/node" 2>/dev/null)" ]; then
+    export PATH="$NVM_DIR/versions/node/$(ls "$NVM_DIR/versions/node" | sort -V | tail -1)/bin:$PATH"
+fi
 
 npm install -g @playwright/cli@latest

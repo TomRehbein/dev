@@ -83,6 +83,16 @@ fi
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
+# ---- pyenv (per-session, needed in non-login interactive shells) ----
+
+export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
+if [[ ":$PATH:" != *":$PYENV_ROOT/bin:"* ]]; then
+    export PATH="$PYENV_ROOT/bin:$PATH"
+fi
+if command -v pyenv &>/dev/null; then
+    eval "$(pyenv init -)"
+fi
+
 # ---- nvm (per-session, needed in interactive shells) ----
 
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
