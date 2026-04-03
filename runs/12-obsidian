@@ -21,12 +21,14 @@ echo "Installing Obsidian v${OBSIDIAN_VERSION}..."
 DEB_URL="https://github.com/obsidianmd/obsidian-releases/releases/download/v${OBSIDIAN_VERSION}/obsidian_${OBSIDIAN_VERSION}_amd64.deb"
 TMP_FILE=$(mktemp --suffix=.deb)
 
+# WSL2 runs Obsidian as a native GUI app via WSLg — these deps are required.
+sudo apt-get install -y libgbm1 libasound2t64
+
 curl -fsSL "$DEB_URL" -o "$TMP_FILE"
 sudo dpkg -i "$TMP_FILE"
 rm -f "$TMP_FILE"
 
 echo "Obsidian v${OBSIDIAN_VERSION} installed."
 echo ""
-echo "  To enable the Obsidian CLI, open Obsidian and go to:"
-echo "  Settings → General → Enable 'Command line interface'"
-echo "  (requires Obsidian installer version 1.12 or later)"
+echo "  On WSL2: launch with 'obsidian' or from the Windows Start Menu."
+echo "  To enable the built-in CLI: Settings → General → Command line interface"

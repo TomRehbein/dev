@@ -42,7 +42,9 @@ addToPath "$BUN_INSTALL/bin"
 
 # ---- Tool inits (run once at login) ----
 
-eval "$(pyenv init -)"
+if [ -x "$PYENV_ROOT/bin/pyenv" ]; then
+    eval "$(pyenv init -)"
+fi
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 

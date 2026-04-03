@@ -4,8 +4,10 @@ set -e
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-if command -v oh-my-posh &>/dev/null; then
-    echo "oh-my-posh already installed: $(oh-my-posh --version)"
+# Check for the Linux binary explicitly — on WSL, oh-my-posh.exe may be
+# reachable via the Windows PATH and fool a plain `command -v` check.
+if [ -x "$HOME/.local/bin/oh-my-posh" ]; then
+    echo "oh-my-posh already installed: $("$HOME/.local/bin/oh-my-posh" --version)"
 else
     mkdir -p "$HOME/.local/bin"
 

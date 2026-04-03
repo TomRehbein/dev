@@ -89,7 +89,7 @@ export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
 if [[ ":$PATH:" != *":$PYENV_ROOT/bin:"* ]]; then
     export PATH="$PYENV_ROOT/bin:$PATH"
 fi
-if command -v pyenv &>/dev/null; then
+if [ -x "$PYENV_ROOT/bin/pyenv" ]; then
     eval "$(pyenv init -)"
 fi
 
@@ -101,6 +101,8 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
 # ---- Prompt: oh-my-posh ----
 
-if command -v oh-my-posh &>/dev/null; then
-    eval "$(oh-my-posh init bash --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
+# Use the Linux binary explicitly — on WSL, oh-my-posh.exe may be on the
+# Windows PATH and would produce a broken prompt if used here.
+if [ -x "$HOME/.local/bin/oh-my-posh" ]; then
+    eval "$("$HOME/.local/bin/oh-my-posh" init bash --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
 fi
