@@ -28,7 +28,9 @@ addToPathFront() {
 }
 
 # User scripts and binaries
-addToPathFront "$HOME/.local/bin"
+# ~/.local/bin is prepended unconditionally so the Linux binary always wins
+# over any Windows equivalent already on the PATH (e.g. opencode.exe on WSL).
+export PATH="$HOME/.local/bin:$PATH"
 addToPathFront "$HOME/.local/scripts"
 addToPathFront "$HOME/.local/apps"
 
