@@ -197,6 +197,7 @@ check_apt "tree"    "tree"
 check_apt "htop"    "htop"
 check_apt "btop"    "btop"
 check_apt "tmux"    "tmux"
+check_apt "lldb"    "lldb"
 
 echo ""
 

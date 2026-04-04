@@ -2,7 +2,7 @@
 
 set -e
 
-APT_PACKAGES=(git ripgrep jq tldr unzip build-essential tmux tree htop btop git-delta)
+APT_PACKAGES=(git ripgrep jq tldr unzip build-essential tmux tree htop btop git-delta lldb)
 missing_pkgs=()
 for pkg in "${APT_PACKAGES[@]}"; do
     dpkg -s "$pkg" &>/dev/null || missing_pkgs+=("$pkg")
