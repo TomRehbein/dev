@@ -68,11 +68,19 @@ _windows_version() {
 
 # check_bin LABEL LINUX_PATH
 #   Passes when LINUX_PATH is an executable file.
+#   Also warns when 'which LABEL' resolves to a different path (e.g. Windows
+#   binary taking precedence on WSL).
 #   On WSL failure: also checks for a Windows version in PATH.
 check_bin() {
     local label="$1" path="$2"
     if [ -x "$path" ]; then
-        _ok "$label" "$path"
+        local resolved
+        resolved="$(command -v "$label" 2>/dev/null || true)"
+        if [ -n "$resolved" ] && [ "$resolved" != "$path" ]; then
+            _warn "$label" "installed at $path but 'which' resolves to: $resolved"
+        else
+            _ok "$label" "$path"
+        fi
     else
         if $IS_WSL; then
             local win
@@ -88,12 +96,20 @@ check_bin() {
 
 # check_bin_multi LABEL PATH...
 #   Passes when any of the given paths is an executable file (first match wins).
+#   Also warns when 'which LABEL' resolves to a different path (e.g. Windows
+#   binary taking precedence on WSL).
 #   On WSL failure: also checks for a Windows version in PATH.
 check_bin_multi() {
     local label="$1"; shift
     for path in "$@"; do
         if [ -x "$path" ]; then
-            _ok "$label" "$path"
+            local resolved
+            resolved="$(command -v "$label" 2>/dev/null || true)"
+            if [ -n "$resolved" ] && [ "$resolved" != "$path" ]; then
+                _warn "$label" "installed at $path but 'which' resolves to: $resolved"
+            else
+                _ok "$label" "$path"
+            fi
             return
         fi
     done
@@ -187,7 +203,7 @@ echo ""
 # --- explicit Linux binaries ($HOME/.local/bin, etc.) ----------------------
 echo "  explicit Linux binaries"
 check_bin "oh-my-posh" "$HOME/.local/bin/oh-my-posh"
-check_bin_multi "opencode"   "$HOME/.local/bin/opencode" "$HOME/.opencode/bin/opencode"
+check_bin       "opencode"   "$HOME/.local/bin/opencode"
 check_bin "claude"     "$HOME/.local/bin/claude"
 check_bin "bun"        "$HOME/.bun/bin/bun"
 check_bin "uv"         "$HOME/.local/bin/uv"
