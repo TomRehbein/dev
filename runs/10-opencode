@@ -9,6 +9,7 @@ if [ -x "$HOME/.local/bin/opencode" ]; then
     exit 0
 fi
 
+mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
 
-curl -fsSL https://opencode.ai/install | bash
+curl -fsSL https://opencode.ai/install | bash -s -- -d "$HOME/.local/bin"
