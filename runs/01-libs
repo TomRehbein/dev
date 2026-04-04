@@ -2,13 +2,26 @@
 
 set -e
 
-sudo apt -y update
-sudo apt -y install git ripgrep jq tldr unzip build-essential tmux tree htop btop git-delta
+APT_PACKAGES=(git ripgrep jq tldr unzip build-essential tmux tree htop btop git-delta)
+missing_pkgs=()
+for pkg in "${APT_PACKAGES[@]}"; do
+    dpkg -s "$pkg" &>/dev/null || missing_pkgs+=("$pkg")
+done
+
+if [ ${#missing_pkgs[@]} -gt 0 ]; then
+    echo "Installing missing apt packages: ${missing_pkgs[*]}"
+    sudo apt -y update
+    sudo apt -y install "${missing_pkgs[@]}"
+else
+    echo "All apt packages already installed, skipping."
+fi
 
 if [ ! -d "$HOME/personal/fzf" ]; then
     git clone https://github.com/junegunn/fzf.git "$HOME/personal/fzf"
 fi
 
-if ! command -v fzf &>/dev/null; then
+if [ ! -x "$HOME/personal/fzf/bin/fzf" ]; then
     "$HOME/personal/fzf/install" --all
+else
+    echo "fzf already installed: $("$HOME/personal/fzf/bin/fzf" --version)"
 fi

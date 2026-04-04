@@ -2,6 +2,11 @@
 
 set -e
 
+if [ -x "/usr/local/bin/nvim" ]; then
+    echo "neovim already installed: $(/usr/local/bin/nvim --version | head -1)"
+    exit 0
+fi
+
 sudo apt install -y cmake gettext lua5.1 liblua5.1-0-dev
 
 if [ ! -d "$HOME/personal/neovim" ]; then

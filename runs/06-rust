@@ -2,6 +2,11 @@
 
 set -e
 
+if [ -x "$HOME/.cargo/bin/rustup" ]; then
+    echo "rust already installed: $("$HOME/.cargo/bin/rustup" show active-toolchain 2>/dev/null || echo 'unknown version')"
+    exit 0
+fi
+
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y
 export PATH="$HOME/.cargo/bin:$PATH"
 
