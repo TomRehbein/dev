@@ -34,6 +34,17 @@ export PATH="$HOME/.local/bin:$PATH"
 addToPathFront "$HOME/.local/scripts"
 addToPathFront "$HOME/.local/apps"
 
+# opencode — installed to ~/.opencode/bin by the upstream installer
+addToPathFront "$HOME/.opencode/bin"
+
+# nvm node — prepend the active node version's bin so it always wins
+# over any Windows node/npm that may appear later in PATH.
+if [ -d "$NVM_DIR/versions/node" ]; then
+    _nvm_node=$(ls "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -1)
+    [ -n "$_nvm_node" ] && addToPathFront "$NVM_DIR/versions/node/$_nvm_node/bin"
+    unset _nvm_node
+fi
+
 # Language runtimes
 addToPathFront "$HOME/.pyenv/bin"
 addToPath      "$HOME/.cargo/bin"

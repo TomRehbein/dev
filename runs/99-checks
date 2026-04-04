@@ -203,7 +203,7 @@ echo ""
 # --- explicit Linux binaries ($HOME/.local/bin, etc.) ----------------------
 echo "  explicit Linux binaries"
 check_bin "oh-my-posh" "$HOME/.local/bin/oh-my-posh"
-check_bin       "opencode"   "$HOME/.local/bin/opencode"
+check_bin "opencode"     "$HOME/.opencode/bin/opencode"
 check_bin "claude"     "$HOME/.local/bin/claude"
 check_bin "bun"        "$HOME/.bun/bin/bun"
 check_bin "uv"         "$HOME/.local/bin/uv"
