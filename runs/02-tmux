@@ -3,9 +3,14 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OS="$(uname -s)"
 
-if ! dpkg -s tmux &>/dev/null; then
-    sudo apt install -y tmux
+if ! command -v tmux &>/dev/null; then
+    if [ "$OS" = "Darwin" ]; then
+        brew install tmux
+    else
+        sudo apt install -y tmux
+    fi
 else
     echo "tmux already installed: $(tmux -V)"
 fi

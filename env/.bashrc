@@ -17,7 +17,9 @@ shopt -s checkwinsize
 
 # ---- Pager ----
 
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+if [ -x /usr/bin/lesspipe ]; then
+    eval "$(SHELL=/bin/sh lesspipe)"
+fi
 
 # ---- Prompt (plain fallback, overridden by oh-my-posh below) ----
 
@@ -52,7 +54,14 @@ esac
 
 # ---- Colors ----
 
-if [ -x /usr/bin/dircolors ]; then
+if [ "$(uname -s)" = "Darwin" ]; then
+    # macOS: use built-in ls color support
+    export CLICOLOR=1
+    export LSCOLORS="ExGxFxDxCxDxDxhbhdacEc"
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+elif [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     export LS_COLORS='di=01;33:ln=01;35:so=01;32:pi=01;36:ex=01;31:bd=01;33:cd=01;33:su=01;35:sg=01;35:tw=01;32:ow=01;32:'
@@ -76,6 +85,11 @@ if ! shopt -oq posix; then
         source /usr/share/bash-completion/bash_completion
     elif [ -f /etc/bash_completion ]; then
         source /etc/bash_completion
+    elif [ "$(uname -s)" = "Darwin" ]; then
+        # Homebrew bash-completion@2
+        if [ -r "$(brew --prefix 2>/dev/null)/etc/profile.d/bash_completion.sh" ]; then
+            source "$(brew --prefix)/etc/profile.d/bash_completion.sh"
+        fi
     fi
 fi
 
@@ -101,8 +115,16 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
 # ---- Prompt: oh-my-posh ----
 
-# Use the Linux binary explicitly — on WSL, oh-my-posh.exe may be on the
+# Use the native binary explicitly — on WSL, oh-my-posh.exe may be on the
 # Windows PATH and would produce a broken prompt if used here.
+_omp_bin=""
 if [ -x "$HOME/.local/bin/oh-my-posh" ]; then
-    eval "$("$HOME/.local/bin/oh-my-posh" init bash --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
+    _omp_bin="$HOME/.local/bin/oh-my-posh"
+elif command -v oh-my-posh &>/dev/null; then
+    _omp_bin="$(command -v oh-my-posh)"
 fi
+
+if [ -n "$_omp_bin" ]; then
+    eval "$("$_omp_bin" init bash --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
+fi
+unset _omp_bin

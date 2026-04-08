@@ -3,20 +3,30 @@
 set -e
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+OS="$(uname -s)"
 
-# Check for the Linux binary explicitly — on WSL, oh-my-posh.exe may be
-# reachable via the Windows PATH and fool a plain `command -v` check.
-if [ -x "$HOME/.local/bin/oh-my-posh" ]; then
-    echo "oh-my-posh already installed: $("$HOME/.local/bin/oh-my-posh" --version)"
+if [ "$OS" = "Darwin" ]; then
+    if brew list oh-my-posh &>/dev/null; then
+        echo "oh-my-posh already installed: $(oh-my-posh --version)"
+    else
+        brew install oh-my-posh
+        oh-my-posh font install meslo
+    fi
 else
-    mkdir -p "$HOME/.local/bin"
+    # Check for the Linux binary explicitly — on WSL, oh-my-posh.exe may be
+    # reachable via the Windows PATH and fool a plain `command -v` check.
+    if [ -x "$HOME/.local/bin/oh-my-posh" ]; then
+        echo "oh-my-posh already installed: $("$HOME/.local/bin/oh-my-posh" --version)"
+    else
+        mkdir -p "$HOME/.local/bin"
 
-    sudo apt install unzip -y
+        sudo apt install unzip -y
 
-    curl -s https://ohmyposh.dev/install.sh | bash -s -- -d "$HOME/.local/bin"
+        curl -s https://ohmyposh.dev/install.sh | bash -s -- -d "$HOME/.local/bin"
 
-    export PATH="$HOME/.local/bin:$PATH"
-    oh-my-posh font install meslo
+        export PATH="$HOME/.local/bin:$PATH"
+        oh-my-posh font install meslo
+    fi
 fi
 
 # Deploy theme file — runs/ executes before dev-env, so the theme must be

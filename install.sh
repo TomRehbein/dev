@@ -2,10 +2,23 @@
 
 set -e
 
-sudo apt -y update
+OS="$(uname -s)"
 
-if ! command -v git &> /dev/null; then
-    sudo apt -y install git
+if [ "$OS" = "Darwin" ]; then
+    if ! command -v brew &> /dev/null; then
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    fi
+
+    if ! command -v git &> /dev/null; then
+        brew install git
+    fi
+else
+    sudo apt -y update
+
+    if ! command -v git &> /dev/null; then
+        sudo apt -y install git
+    fi
 fi
 
 if [ ! -d "$HOME/personal" ]; then

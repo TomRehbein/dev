@@ -3,11 +3,14 @@
 set -e
 
 # ---------------------------------------------------------------------------
-# 99-checks — verify that all dev-env tools are installed as Linux binaries.
+# 99-checks — verify that all dev-env tools are installed.
 #
 # On WSL, Windows binaries (e.g. fzf.exe) can appear in PATH via the Windows
-# PATH passthrough. Each check uses an explicit Linux path where applicable so
+# PATH passthrough. Each check uses an explicit path where applicable so
 # a Windows version never masks a missing Linux install.
+#
+# On macOS, tools are installed via Homebrew — checks use `brew list` or
+# `command -v` as appropriate.
 #
 # Exit codes:
 #   0 — all checks passed
@@ -18,9 +21,11 @@ PASS=0
 FAIL=0
 WARN=0
 
-# Detect WSL
+OS="$(uname -s)"
+
+# Detect WSL (Linux only)
 IS_WSL=false
-if grep -qi microsoft /proc/version 2>/dev/null; then
+if [ "$OS" = "Linux" ] && grep -qi microsoft /proc/version 2>/dev/null; then
     IS_WSL=true
 fi
 
@@ -67,7 +72,7 @@ _windows_version() {
 }
 
 # check_bin LABEL LINUX_PATH
-#   Passes when LINUX_PATH is an executable file.
+#   Passes when the given path is an executable file.
 #   Also warns when 'which LABEL' resolves to a different path (e.g. Windows
 #   binary taking precedence on WSL).
 #   On WSL failure: also checks for a Windows version in PATH.
@@ -96,9 +101,6 @@ check_bin() {
 
 # check_bin_multi LABEL PATH...
 #   Passes when any of the given paths is an executable file (first match wins).
-#   Also warns when 'which LABEL' resolves to a different path (e.g. Windows
-#   binary taking precedence on WSL).
-#   On WSL failure: also checks for a Windows version in PATH.
 check_bin_multi() {
     local label="$1"; shift
     for path in "$@"; do
@@ -124,29 +126,59 @@ check_bin_multi() {
     _fail "$label" "not installed (checked: $*)"
 }
 
-# check_apt LABEL PACKAGE
-#   Uses dpkg to confirm the package is installed; also verifies the binary
-#   resolves to a path outside /mnt (i.e. not a Windows binary).
-check_apt() {
-    local label="$1" pkg="$2" cmd="${3:-$1}"
-    if dpkg -s "$pkg" &>/dev/null 2>&1; then
-        local resolved
-        resolved="$(command -v "$cmd" 2>/dev/null || true)"
-        if [[ "$resolved" == /mnt/* ]]; then
-            _warn "$label" "dpkg says installed but binary resolves to Windows path: $resolved"
-        else
-            _ok "$label" "${resolved:-installed via dpkg}"
-        fi
+# check_cmd LABEL
+#   Passes when the command is found via `command -v`.
+check_cmd() {
+    local label="$1" cmd="${2:-$1}"
+    local resolved
+    resolved="$(command -v "$cmd" 2>/dev/null || true)"
+    if [ -n "$resolved" ]; then
+        _ok "$label" "$resolved"
     else
-        if $IS_WSL; then
-            local win
-            win="$(_windows_version "$cmd")"
-            if [ -n "$win" ]; then
-                _warn "$label" "not installed via apt — Windows version in PATH: $win"
-                return
+        _fail "$label" "not found in PATH"
+    fi
+}
+
+# check_pkg LABEL PACKAGE [COMMAND]
+#   On Linux: uses dpkg to confirm the package is installed.
+#   On macOS: uses brew list to confirm the package is installed.
+check_pkg() {
+    local label="$1" pkg="$2" cmd="${3:-$1}"
+    if [ "$OS" = "Darwin" ]; then
+        if brew list "$pkg" &>/dev/null 2>&1; then
+            local resolved
+            resolved="$(command -v "$cmd" 2>/dev/null || true)"
+            _ok "$label" "${resolved:-installed via brew}"
+        else
+            # Some tools (git, unzip) ship with macOS/Xcode CLT — fall back to PATH check
+            local resolved
+            resolved="$(command -v "$cmd" 2>/dev/null || true)"
+            if [ -n "$resolved" ]; then
+                _ok "$label" "$resolved (system)"
+            else
+                _fail "$label" "not installed (brew: $pkg)"
             fi
         fi
-        _fail "$label" "not installed (dpkg: $pkg)"
+    else
+        if dpkg -s "$pkg" &>/dev/null 2>&1; then
+            local resolved
+            resolved="$(command -v "$cmd" 2>/dev/null || true)"
+            if [[ "$resolved" == /mnt/* ]]; then
+                _warn "$label" "dpkg says installed but binary resolves to Windows path: $resolved"
+            else
+                _ok "$label" "${resolved:-installed via dpkg}"
+            fi
+        else
+            if $IS_WSL; then
+                local win
+                win="$(_windows_version "$cmd")"
+                if [ -n "$win" ]; then
+                    _warn "$label" "not installed via apt — Windows version in PATH: $win"
+                    return
+                fi
+            fi
+            _fail "$label" "not installed (dpkg: $pkg)"
+        fi
     fi
 }
 
@@ -178,39 +210,61 @@ _nvm_latest_node() {
 echo ""
 if $IS_WSL; then
     printf "${BOLD}Checking dev environment (WSL detected)${RESET}\n"
+elif [ "$OS" = "Darwin" ]; then
+    printf "${BOLD}Checking dev environment (macOS)${RESET}\n"
 else
-    printf "${BOLD}Checking dev environment${RESET}\n"
+    printf "${BOLD}Checking dev environment (Linux)${RESET}\n"
 fi
 printf '%0.s─' {1..50}
 echo ""
 echo ""
 
-# --- apt packages (01-libs, 02-tmux) ---------------------------------------
-echo "  apt packages"
-check_apt "git"     "git"
-check_apt "rg"      "ripgrep"       "rg"
-check_apt "jq"      "jq"
-check_apt "delta"   "git-delta"     "delta"
-check_apt "tldr"    "tldr"
-check_apt "unzip"   "unzip"
-check_apt "tree"    "tree"
-check_apt "htop"    "htop"
-check_apt "btop"    "btop"
-check_apt "tmux"    "tmux"
-check_apt "lldb"    "lldb"
+# --- system packages (01-libs, 02-tmux) ------------------------------------
+echo "  system packages"
+check_pkg "git"     "git"
+check_pkg "rg"      "ripgrep"       "rg"
+check_pkg "jq"      "jq"
+check_pkg "delta"   "git-delta"     "delta"
+check_pkg "tldr"    "tldr"
+check_pkg "tree"    "tree"
+check_pkg "htop"    "htop"
+check_pkg "btop"    "btop"
+check_pkg "tmux"    "tmux"
+
+if [ "$OS" = "Darwin" ]; then
+    check_pkg "coreutils" "coreutils" "gsort"
+fi
+
+if [ "$OS" = "Darwin" ]; then
+    # unzip and lldb are built-in on macOS (Xcode CLT)
+    check_cmd "unzip"
+    check_cmd "lldb"
+else
+    check_pkg "unzip"   "unzip"
+    check_pkg "lldb"    "lldb"
+fi
 
 echo ""
 
-# --- explicit Linux binaries ($HOME/.local/bin, etc.) ----------------------
-echo "  explicit Linux binaries"
-check_bin "oh-my-posh" "$HOME/.local/bin/oh-my-posh"
+# --- explicit binaries -----------------------------------------------------
+echo "  standalone binaries"
+
+if [ "$OS" = "Darwin" ]; then
+    # On macOS, oh-my-posh is installed via brew
+    check_cmd "oh-my-posh"
+    # neovim is installed via brew
+    check_cmd "nvim"
+else
+    check_bin "oh-my-posh" "$HOME/.local/bin/oh-my-posh"
+    check_bin "nvim"       "/usr/local/bin/nvim"
+fi
+
 check_bin "opencode"     "$HOME/.opencode/bin/opencode"
 check_bin "claude"     "$HOME/.local/bin/claude"
 check_bin "bun"        "$HOME/.bun/bin/bun"
 check_bin "uv"         "$HOME/.local/bin/uv"
 check_bin "rustup"     "$HOME/.cargo/bin/rustup"
 check_bin "cargo"      "$HOME/.cargo/bin/cargo"
-check_bin "nvim"       "/usr/local/bin/nvim"
 
 echo ""
 

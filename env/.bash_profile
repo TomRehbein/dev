@@ -27,8 +27,17 @@ addToPathFront() {
     fi
 }
 
+# Homebrew (macOS) — must be set up before anything else so brew is available
+if [ "$(uname -s)" = "Darwin" ] && [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    # GNU coreutils (sort -V, etc.) — prepend gnubin so GNU versions win
+    if [ -d "$(brew --prefix coreutils 2>/dev/null)/libexec/gnubin" ]; then
+        addToPathFront "$(brew --prefix coreutils)/libexec/gnubin"
+    fi
+fi
+
 # User scripts and binaries
-# ~/.local/bin is prepended unconditionally so the Linux binary always wins
+# ~/.local/bin is prepended unconditionally so the native binary always wins
 # over any Windows equivalent already on the PATH (e.g. opencode.exe on WSL).
 export PATH="$HOME/.local/bin:$PATH"
 addToPathFront "$HOME/.local/scripts"

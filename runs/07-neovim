@@ -2,19 +2,25 @@
 
 set -e
 
-if [ -x "/usr/local/bin/nvim" ]; then
-    echo "neovim already installed: $(/usr/local/bin/nvim --version | head -1)"
+OS="$(uname -s)"
+
+if command -v nvim &>/dev/null; then
+    echo "neovim already installed: $(nvim --version | head -1)"
     exit 0
 fi
 
-sudo apt install -y cmake gettext lua5.1 liblua5.1-0-dev
-
-if [ ! -d "$HOME/personal/neovim" ]; then
-    git clone https://github.com/neovim/neovim.git "$HOME/personal/neovim"
+if [ "$OS" = "Darwin" ]; then
+    brew install neovim
 else
-    git -C "$HOME/personal/neovim" pull --ff-only
-fi
+    sudo apt install -y cmake gettext lua5.1 liblua5.1-0-dev
 
-cd "$HOME/personal/neovim"
-make CMAKE_BUILD_TYPE=RelWithDebInfo
-sudo make install
+    if [ ! -d "$HOME/personal/neovim" ]; then
+        git clone https://github.com/neovim/neovim.git "$HOME/personal/neovim"
+    else
+        git -C "$HOME/personal/neovim" pull --ff-only
+    fi
+
+    cd "$HOME/personal/neovim"
+    make CMAKE_BUILD_TYPE=RelWithDebInfo
+    sudo make install
+fi
