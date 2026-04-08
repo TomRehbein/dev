@@ -3,21 +3,14 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OS="$(uname -s)"
 
 if ! command -v tmux &>/dev/null; then
-    if [ "$OS" = "Darwin" ]; then
-        brew install tmux
-    else
-        sudo apt install -y tmux
-    fi
+    brew install tmux
 else
     echo "tmux already installed: $(tmux -V)"
 fi
 
-TMUX_DIR="$SCRIPT_DIR/../env/.config/tmux"
-TMUX_CONF="$TMUX_DIR/tmux.conf"
-TPM_DIR="$TMUX_DIR/plugins/tpm"
+TPM_DIR="$SCRIPT_DIR/../env/.config/tmux/plugins/tpm"
 
 if [ ! -d "$TPM_DIR" ]; then
     git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
@@ -25,5 +18,5 @@ fi
 
 mkdir -p ~/.config/tmux
 
-export TMUX_PLUGIN_MANAGER_PATH="$TMUX_DIR/plugins"
+export TMUX_PLUGIN_MANAGER_PATH="$SCRIPT_DIR/../env/.config/tmux/plugins"
 "$TPM_DIR/bin/install_plugins"

@@ -1,4 +1,4 @@
-# ~/.zshrc — sourced for interactive shells (zsh equivalent of .bashrc)
+# ~/.zshrc — sourced for interactive shells
 # Aliases, prompt, shell options, completions, and per-session tool setup.
 
 # If not running interactively, don't do anything
@@ -24,31 +24,18 @@ setopt NO_BEEP
 
 autoload -Uz compinit && compinit
 
-# Homebrew completions (macOS)
-if [ "$(uname -s)" = "Darwin" ]; then
-    if [ -r "$(brew --prefix 2>/dev/null)/share/zsh/site-functions" ]; then
-        fpath=("$(brew --prefix)/share/zsh/site-functions" $fpath)
-    fi
+# Homebrew completions
+if [ -r "$(brew --prefix 2>/dev/null)/share/zsh/site-functions" ]; then
+    fpath=("$(brew --prefix)/share/zsh/site-functions" $fpath)
 fi
 
 # ---- Colors ----
 
-if [ "$(uname -s)" = "Darwin" ]; then
-    export CLICOLOR=1
-    export LSCOLORS="ExGxFxDxCxDxDxhbhdacEc"
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-else
-    if [ -x /usr/bin/dircolors ]; then
-        test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-        alias ls='ls --color=auto'
-        export LS_COLORS='di=01;33:ln=01;35:so=01;32:pi=01;36:ex=01;31:bd=01;33:cd=01;33:su=01;35:sg=01;35:tw=01;32:ow=01;32:'
-    fi
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-fi
+export CLICOLOR=1
+export LSCOLORS="ExGxFxDxCxDxDxhbhdacEc"
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
 
 # ---- Aliases ----
 
@@ -97,16 +84,6 @@ bindkey "^g^p" _git_clone_personal
 
 # ---- Prompt: oh-my-posh ----
 
-# Use the native binary explicitly — on WSL, oh-my-posh.exe may be on the
-# Windows PATH and would produce a broken prompt if used here.
-_omp_bin=""
-if [ -x "$HOME/.local/bin/oh-my-posh" ]; then
-    _omp_bin="$HOME/.local/bin/oh-my-posh"
-elif command -v oh-my-posh &>/dev/null; then
-    _omp_bin="$(command -v oh-my-posh)"
+if command -v oh-my-posh &>/dev/null; then
+    eval "$(oh-my-posh init zsh --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
 fi
-
-if [ -n "$_omp_bin" ]; then
-    eval "$("$_omp_bin" init zsh --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
-fi
-unset _omp_bin

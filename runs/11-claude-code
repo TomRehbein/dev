@@ -2,8 +2,6 @@
 
 set -e
 
-# Check for the native binary explicitly — on WSL, claude.exe may be
-# reachable via the Windows PATH and fool a plain `command -v` check.
 if [ -x "$HOME/.local/bin/claude" ]; then
     echo "claude code already installed: $("$HOME/.local/bin/claude" --version 2>/dev/null || echo 'unknown version')"
     exit 0

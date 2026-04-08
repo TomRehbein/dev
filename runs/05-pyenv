@@ -2,8 +2,6 @@
 
 set -e
 
-OS="$(uname -s)"
-
 export PYENV_ROOT="$HOME/.pyenv"
 
 if [ -x "$PYENV_ROOT/bin/pyenv" ]; then
@@ -11,15 +9,8 @@ if [ -x "$PYENV_ROOT/bin/pyenv" ]; then
     exit 0
 fi
 
-if [ "$OS" = "Darwin" ]; then
-    # macOS: Xcode CLT provides most build deps; install remaining ones via brew
-    brew install openssl readline sqlite3 xz zlib tcl-tk
-else
-    sudo apt install -y make build-essential libssl-dev zlib1g-dev \
-    libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
-    libffi-dev liblzma-dev git
-fi
+# macOS: Xcode CLT provides most build deps; install remaining ones via brew
+brew install openssl readline sqlite3 xz zlib tcl-tk
 
 curl https://pyenv.run | bash
 

@@ -26,10 +26,10 @@ addToPathFront() {
     fi
 }
 
-# Homebrew (macOS) — must be set up before anything else so brew is available
-if [ "$(uname -s)" = "Darwin" ] && [ -x /opt/homebrew/bin/brew ]; then
+# Homebrew — must be set up before anything else so brew is available
+if [ -x /opt/homebrew/bin/brew ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
-    # GNU coreutils (sort -V, etc.) — prepend gnubin so GNU versions win
+    # GNU coreutils (gsort, etc.) — prepend gnubin so GNU versions win
     if [ -d "$(brew --prefix coreutils 2>/dev/null)/libexec/gnubin" ]; then
         addToPathFront "$(brew --prefix coreutils)/libexec/gnubin"
     fi
@@ -44,7 +44,6 @@ addToPathFront "$HOME/.local/apps"
 addToPathFront "$HOME/.opencode/bin"
 
 # nvm node — prepend the active node version's bin so it always wins
-# sort -V is GNU-only; use gsort on macOS (coreutils) when available.
 if [ -d "$NVM_DIR/versions/node" ]; then
     _sort_v() { command -v gsort &>/dev/null && gsort -V || sort -V; }
     _nvm_node=$(ls "$NVM_DIR/versions/node" 2>/dev/null | _sort_v | tail -1)
@@ -68,10 +67,6 @@ if [ -x "$PYENV_ROOT/bin/pyenv" ]; then
 fi
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-# ---- Keybindings ----
-# Defined as zle widgets in .zshrc (bindkey requires zle which is only
-# available in interactive shells — so keybindings live in .zshrc).
 
 # ---- Functions ----
 

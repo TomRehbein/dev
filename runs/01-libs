@@ -2,45 +2,15 @@
 
 set -e
 
-OS="$(uname -s)"
+BREW_PACKAGES=(git ripgrep jq tldr tmux tree htop btop git-delta coreutils fzf)
+missing_pkgs=()
+for pkg in "${BREW_PACKAGES[@]}"; do
+    brew list "$pkg" &>/dev/null || missing_pkgs+=("$pkg")
+done
 
-if [ "$OS" = "Darwin" ]; then
-    # unzip is built-in on macOS; lldb ships with Xcode CLT
-    # coreutils provides GNU sort -V, sed, etc. used by shell configs
-    BREW_PACKAGES=(git ripgrep jq tldr tmux tree htop btop git-delta coreutils)
-    missing_pkgs=()
-    for pkg in "${BREW_PACKAGES[@]}"; do
-        brew list "$pkg" &>/dev/null || missing_pkgs+=("$pkg")
-    done
-
-    if [ ${#missing_pkgs[@]} -gt 0 ]; then
-        echo "Installing missing brew packages: ${missing_pkgs[*]}"
-        brew install "${missing_pkgs[@]}"
-    else
-        echo "All brew packages already installed, skipping."
-    fi
+if [ ${#missing_pkgs[@]} -gt 0 ]; then
+    echo "Installing missing brew packages: ${missing_pkgs[*]}"
+    brew install "${missing_pkgs[@]}"
 else
-    APT_PACKAGES=(git ripgrep jq tldr unzip build-essential tmux tree htop btop git-delta lldb)
-    missing_pkgs=()
-    for pkg in "${APT_PACKAGES[@]}"; do
-        dpkg -s "$pkg" &>/dev/null || missing_pkgs+=("$pkg")
-    done
-
-    if [ ${#missing_pkgs[@]} -gt 0 ]; then
-        echo "Installing missing apt packages: ${missing_pkgs[*]}"
-        sudo apt -y update
-        sudo apt -y install "${missing_pkgs[@]}"
-    else
-        echo "All apt packages already installed, skipping."
-    fi
-fi
-
-if [ ! -d "$HOME/personal/fzf" ]; then
-    git clone https://github.com/junegunn/fzf.git "$HOME/personal/fzf"
-fi
-
-if [ ! -x "$HOME/personal/fzf/bin/fzf" ]; then
-    "$HOME/personal/fzf/install" --all
-else
-    echo "fzf already installed: $("$HOME/personal/fzf/bin/fzf" --version)"
+    echo "All brew packages already installed, skipping."
 fi
