@@ -34,7 +34,7 @@ execute() {
 log "$script_dir -- filters: ${filters[*]}"
 
 cd "$script_dir"
-scripts=$(find ./runs -maxdepth 1 -mindepth 1 -executable -type f | sort)
+scripts=$(find ./runs -maxdepth 1 -mindepth 1 -type f -perm /111 | sort)
 
 for script in $scripts; do
 	if [ ${#filters[@]} -gt 0 ]; then

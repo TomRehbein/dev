@@ -6,8 +6,6 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 dry="0"
 
 if [ -z "$XDG_CONFIG_HOME" ]; then
-	echo "no xdg config home"
-	echo "using ~/.config"
 	XDG_CONFIG_HOME="$HOME/.config"
 fi
 
@@ -125,6 +123,8 @@ fi
 # Dotfiles — deployed first so they are always written, independent of
 # any directory-copy operations that might fail and abort the script.
 copy_file "$script_dir/env/.tmux-sessionizer" "$HOME"
+copy_file "$script_dir/env/.zshrc"            "$HOME"
+copy_file "$script_dir/env/.zprofile"         "$HOME"
 copy_file "$script_dir/env/.bashrc"           "$HOME"
 copy_file "$script_dir/env/.bash_profile"     "$HOME"
 copy_file "$script_dir/env/.inputrc"          "$HOME"
