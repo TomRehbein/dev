@@ -194,12 +194,17 @@ check_file() {
 }
 
 # ---------------------------------------------------------------------------
+# Portable version sort: use gsort on macOS (coreutils), fall back to sort -V.
+# ---------------------------------------------------------------------------
+_sort_v() { command -v gsort &>/dev/null && gsort -V || sort -V; }
+
+# ---------------------------------------------------------------------------
 # Latest nvm node version helper
 # ---------------------------------------------------------------------------
 _nvm_latest_node() {
     local nvm_versions_dir="$HOME/.nvm/versions/node"
     if [ -d "$nvm_versions_dir" ]; then
-        ls "$nvm_versions_dir" 2>/dev/null | sort -V | tail -1
+        ls "$nvm_versions_dir" 2>/dev/null | _sort_v | tail -1
     fi
 }
 

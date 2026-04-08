@@ -9,9 +9,11 @@ fi
 
 # NVM does not export npm to PATH in non-interactive subshells — set it explicitly.
 # Guard against the versions/node directory not existing yet (e.g. nvm not yet used).
+# sort -V (version sort) is GNU-only; use gsort on macOS (installed via coreutils brew).
+_sort_v() { command -v gsort &>/dev/null && gsort -V || sort -V; }
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 if [ -d "$NVM_DIR/versions/node" ] && [ -n "$(ls "$NVM_DIR/versions/node" 2>/dev/null)" ]; then
-    export PATH="$NVM_DIR/versions/node/$(ls "$NVM_DIR/versions/node" | sort -V | tail -1)/bin:$PATH"
+    export PATH="$NVM_DIR/versions/node/$(ls "$NVM_DIR/versions/node" | _sort_v | tail -1)/bin:$PATH"
 fi
 
 npm install -g @playwright/cli@latest

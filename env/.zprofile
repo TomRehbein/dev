@@ -44,10 +44,13 @@ addToPathFront "$HOME/.local/apps"
 addToPathFront "$HOME/.opencode/bin"
 
 # nvm node — prepend the active node version's bin so it always wins
+# sort -V is GNU-only; use gsort on macOS (coreutils) when available.
 if [ -d "$NVM_DIR/versions/node" ]; then
-    _nvm_node=$(ls "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -1)
+    _sort_v() { command -v gsort &>/dev/null && gsort -V || sort -V; }
+    _nvm_node=$(ls "$NVM_DIR/versions/node" 2>/dev/null | _sort_v | tail -1)
     [ -n "$_nvm_node" ] && addToPathFront "$NVM_DIR/versions/node/$_nvm_node/bin"
     unset _nvm_node
+    unset -f _sort_v
 fi
 
 # Language runtimes

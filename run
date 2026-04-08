@@ -48,5 +48,5 @@ for script in $scripts; do
 		fi
 	fi
 
-	execute ./$script
+	execute "$script"
 done
