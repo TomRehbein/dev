@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+
+REPO_DIR="$HOME/personal/opencode-dispatch"
+
+if [ -d "$REPO_DIR" ]; then
+    echo "opencode-dispatch already exists at $REPO_DIR"
+    exit 0
+fi
+
+git clone https://github.com/TomRehbein/opencode-dispatch "$REPO_DIR"
+
+cd "$REPO_DIR"
+bun install
+bun run build
+
+cd "$REPO_DIR/packages/cli"
+bun link
