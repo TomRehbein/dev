@@ -12,8 +12,8 @@ fi
 git clone https://github.com/TomRehbein/opencode-dispatch "$REPO_DIR"
 
 cd "$REPO_DIR"
-bun install
-bun run build
+"$HOME/.bun/bin/bun" install
+"$HOME/.bun/bin/bun" run build
 
 cd "$REPO_DIR/packages/cli"
-bun link
+"$HOME/.bun/bin/bun" link
