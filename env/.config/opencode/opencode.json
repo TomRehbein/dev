@@ -3,6 +3,6 @@
   "plugin": [
     "superpowers@git+https://github.com/obra/superpowers.git",
     "opencode-handoff",
-    "@opencode-dispatch/plugin"
+    "file:/home/ttt/personal/opencode-dispatch/packages/plugin"
   ]
 }

@@ -5,6 +5,7 @@ if [[ "$(pwd)" == $HOME/personal ]]; then
     return
 fi
 
+# Window 1: dev
 tmux rename-window "dev"
 tmux split-window -h
 
@@ -12,8 +13,18 @@ tmux resize-pane -t 2 -x 70%
 tmux send-keys -t 2 "nvim ." C-m
 tmux select-pane -t 1
 
+# Window 2: opencode
+tmux new-window -n opencode
+tmux split-window -h
+
+tmux resize-pane -t 2 -x 85%
+tmux send-keys -t 1 "opencode-dispatch" C-m
+tmux send-keys -t 2 "opencode" C-m
+
+# Window 3: scratch
 tmux new-window -dn scratch
 
+# Zurück zu Window 1
 tmux select-window -t 1
 
 clear
