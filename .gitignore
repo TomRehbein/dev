@@ -4,3 +4,4 @@ ascii/
 env/.config/tmux/plugins/
 env/.bash_profile.local
 .claude/
+!env/.claude/
