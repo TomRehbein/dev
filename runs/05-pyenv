@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-set -e
+# pyenv init references unset variables, so `set -u` is intentionally omitted.
+set -eo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os arch
 
 export PYENV_ROOT="$HOME/.pyenv"
 
@@ -9,10 +15,14 @@ if [ -x "$PYENV_ROOT/bin/pyenv" ]; then
     exit 0
 fi
 
-sudo apt install -y make build-essential libssl-dev zlib1g-dev \
-libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
-libffi-dev liblzma-dev git
+# Python build dependencies for Arch. Unlike macOS (where many of these ship
+# with the SDK), Arch needs them explicitly. The compiler toolchain comes from
+# base-devel (install.sh). Name mapping vs. Ubuntu: zlib1g-dev->zlib,
+# libbz2-dev->bzip2, libssl-dev->openssl, libsqlite3-dev->sqlite,
+# libncursesw5-dev->ncurses, liblzma-dev/xz-utils->xz, libxml2-dev->libxml2,
+# libxmlsec1-dev->xmlsec, tk-dev->tk, lua5.1->lua51 (n/a here).
+pkg_install base-devel openssl zlib xz bzip2 readline sqlite ncurses \
+    libffi tk libxml2 xmlsec wget llvm
 
 curl https://pyenv.run | bash
 

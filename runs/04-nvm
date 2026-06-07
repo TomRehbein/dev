@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 
-set -e
+# nvm.sh references unset variables internally, so `set -u` is intentionally
+# omitted here (would abort on sourcing nvm.sh).
+set -eo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os arch
 
 export NVM_DIR="$HOME/.nvm"
 
@@ -20,4 +27,3 @@ curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_LATEST}/install.sh"
 nvm install --lts
 nvm install node --latest-npm
 nvm use node
-

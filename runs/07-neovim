@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
-if [ -x "/usr/local/bin/nvim" ]; then
-    echo "neovim already installed: $(/usr/local/bin/nvim --version | head -1)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os arch
+
+# Install target stays at /usr/local (Ubuntu parity); the default Arch prefix
+# is /usr, which we leave to pacman's own neovim package. `make install` needs
+# sudo for /usr/local.
+NVIM_BIN="/usr/local/bin/nvim"
+
+if [ -x "$NVIM_BIN" ]; then
+    echo "neovim already installed: $("$NVIM_BIN" --version | head -1)"
     exit 0
 fi
 
-sudo apt install -y cmake gettext lua5.1 liblua5.1-0-dev
+# Build deps. lua51 replaces Ubuntu's lua5.1 / liblua5.1-0-dev. The C toolchain
+# comes from base-devel (install.sh).
+pkg_install cmake gettext lua51
 
 if [ ! -d "$HOME/personal/neovim" ]; then
     git clone https://github.com/neovim/neovim.git "$HOME/personal/neovim"
