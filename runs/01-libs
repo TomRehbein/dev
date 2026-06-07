@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
-APT_PACKAGES=(git ripgrep jq tldr unzip build-essential tmux tree htop btop git-delta lldb)
-missing_pkgs=()
-for pkg in "${APT_PACKAGES[@]}"; do
-    dpkg -s "$pkg" &>/dev/null || missing_pkgs+=("$pkg")
-done
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os arch
 
-if [ ${#missing_pkgs[@]} -gt 0 ]; then
-    echo "Installing missing apt packages: ${missing_pkgs[*]}"
-    sudo apt -y update
-    sudo apt -y install "${missing_pkgs[@]}"
-else
-    echo "All apt packages already installed, skipping."
-fi
+# build-essential maps to the base-devel group on Arch (compiler toolchain),
+# installed by install.sh as a precondition. lldb and git-delta live in the
+# official repos. tealdeer provides the `tldr` command (the Rust client) and
+# replaces Ubuntu's node-based tldr — no AUR needed.
+PACMAN_PACKAGES=(git ripgrep jq tealdeer unzip tmux tree htop btop git-delta lldb)
+pkg_install "${PACMAN_PACKAGES[@]}"
 
 if [ ! -d "$HOME/personal/fzf" ]; then
     git clone https://github.com/junegunn/fzf.git "$HOME/personal/fzf"

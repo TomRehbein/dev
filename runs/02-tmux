@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os arch
 
-if ! dpkg -s tmux &>/dev/null; then
-    sudo apt install -y tmux
+if ! pkg_check tmux; then
+    pkg_install tmux
 else
     echo "tmux already installed: $(tmux -V)"
 fi
