@@ -66,62 +66,28 @@ _windows_version() {
     echo "$found"
 }
 
-# check_bin LABEL LINUX_PATH
-#   Passes when LINUX_PATH is an executable file.
-#   Also warns when 'which LABEL' resolves to a different path (e.g. Windows
-#   binary taking precedence on WSL).
-#   On WSL failure: also checks for a Windows version in PATH.
-check_bin() {
-    local label="$1" path="$2"
-    if [ -x "$path" ]; then
-        local resolved
-        resolved="$(command -v "$label" 2>/dev/null || true)"
-        if [ -n "$resolved" ] && [ "$resolved" != "$path" ]; then
-            _warn "$label" "installed at $path but 'which' resolves to: $resolved"
-        else
-            _ok "$label" "$path"
-        fi
-    else
+# check_cmd LABEL [CMD]
+#   Passes when 'command -v CMD' resolves to a non-/mnt/ path.
+#   CMD defaults to LABEL.
+check_cmd() {
+    local label="$1" cmd="${2:-$1}"
+    local resolved
+    resolved="$(command -v "$cmd" 2>/dev/null || true)"
+    if [ -z "$resolved" ]; then
         if $IS_WSL; then
             local win
-            win="$(_windows_version "$label")"
+            win="$(_windows_version "$cmd")"
             if [ -n "$win" ]; then
-                _warn "$label" "Linux binary not found — Windows version in PATH: $win"
+                _warn "$label" "not installed — Windows version in PATH: $win"
                 return
             fi
         fi
-        _fail "$label" "not installed ($path not found)"
+        _fail "$label" "not found in PATH"
+    elif [[ "$resolved" == /mnt/* ]]; then
+        _warn "$label" "resolves to Windows path: $resolved"
+    else
+        _ok "$label" "$resolved"
     fi
-}
-
-# check_bin_multi LABEL PATH...
-#   Passes when any of the given paths is an executable file (first match wins).
-#   Also warns when 'which LABEL' resolves to a different path (e.g. Windows
-#   binary taking precedence on WSL).
-#   On WSL failure: also checks for a Windows version in PATH.
-check_bin_multi() {
-    local label="$1"; shift
-    for path in "$@"; do
-        if [ -x "$path" ]; then
-            local resolved
-            resolved="$(command -v "$label" 2>/dev/null || true)"
-            if [ -n "$resolved" ] && [ "$resolved" != "$path" ]; then
-                _warn "$label" "installed at $path but 'which' resolves to: $resolved"
-            else
-                _ok "$label" "$path"
-            fi
-            return
-        fi
-    done
-    if $IS_WSL; then
-        local win
-        win="$(_windows_version "$label")"
-        if [ -n "$win" ]; then
-            _warn "$label" "Linux binary not found — Windows version in PATH: $win"
-            return
-        fi
-    fi
-    _fail "$label" "not installed (checked: $*)"
 }
 
 # check_apt LABEL PACKAGE
@@ -162,16 +128,6 @@ check_file() {
 }
 
 # ---------------------------------------------------------------------------
-# Latest nvm node version helper
-# ---------------------------------------------------------------------------
-_nvm_latest_node() {
-    local nvm_versions_dir="$HOME/.nvm/versions/node"
-    if [ -d "$nvm_versions_dir" ]; then
-        ls "$nvm_versions_dir" 2>/dev/null | sort -V | tail -1
-    fi
-}
-
-# ---------------------------------------------------------------------------
 # Checks
 # ---------------------------------------------------------------------------
 
@@ -203,14 +159,14 @@ echo ""
 
 # --- explicit Linux binaries ($HOME/.local/bin, etc.) ----------------------
 echo "  explicit Linux binaries"
-check_bin "oh-my-posh" "$HOME/.local/bin/oh-my-posh"
-check_bin "opencode"     "$HOME/.opencode/bin/opencode"
-check_bin "claude"     "$HOME/.local/bin/claude"
-check_bin "bun"        "$HOME/.bun/bin/bun"
-check_bin "uv"         "$HOME/.local/bin/uv"
-check_bin "rustup"     "$HOME/.cargo/bin/rustup"
-check_bin "cargo"      "$HOME/.cargo/bin/cargo"
-check_bin "nvim"       "/usr/local/bin/nvim"
+check_cmd "oh-my-posh"
+check_cmd "opencode"
+check_cmd "claude"
+check_cmd "bun"
+check_cmd "uv"
+check_cmd "rustup"
+check_cmd "cargo"
+check_cmd "nvim"
 
 echo ""
 
@@ -221,35 +177,22 @@ echo "  version managers"
 check_file "nvm" "$HOME/.nvm/nvm.sh" "$HOME/.nvm/nvm.sh"
 
 # node/npm via nvm
-NVM_NODE_VERSION="$(_nvm_latest_node)"
-if [ -n "$NVM_NODE_VERSION" ]; then
-    NVM_BIN="$HOME/.nvm/versions/node/${NVM_NODE_VERSION}/bin"
-    check_bin "node" "$NVM_BIN/node"
-    check_bin "npm"  "$NVM_BIN/npm"
-else
-    _fail "node" "no nvm node versions found under $HOME/.nvm/versions/node"
-    _fail "npm"  "no nvm node versions found under $HOME/.nvm/versions/node"
-    FAIL=$(( FAIL + 2 ))
-fi
+check_cmd "node"
+check_cmd "npm"
 
 # pyenv
-check_bin  "pyenv"  "$HOME/.pyenv/bin/pyenv"
-check_file "python" "$HOME/.pyenv/shims/python" "$HOME/.pyenv/shims/python (pyenv shim)"
+check_cmd "pyenv"
+check_cmd "python"
 
-# fzf — installed from source into $HOME/personal/fzf
-check_bin "fzf" "$HOME/personal/fzf/bin/fzf"
+# fzf
+check_cmd "fzf"
 
 echo ""
 
 # --- npm globals (13-playwright-cli) ----------------------------------------
 echo "  npm globals"
 
-if [ -n "$NVM_NODE_VERSION" ]; then
-    check_bin "playwright-cli" "$HOME/.nvm/versions/node/${NVM_NODE_VERSION}/bin/playwright-cli"
-else
-    _fail "playwright-cli" "cannot check — no nvm node version found"
-    FAIL=$(( FAIL + 1 ))
-fi
+check_cmd "playwright-cli"
 
 # ---------------------------------------------------------------------------
 # Summary
