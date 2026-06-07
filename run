@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# shellcheck source=lib/os.sh
+source "$script_dir/lib/os.sh"
+require_os macos
 filters=()
 dry="0"
 
@@ -31,10 +34,12 @@ execute() {
 	"$@"
 }
 
-log "$script_dir -- filters: ${filters[*]}"
+# ${arr[*]:-} keeps `set -u` happy when no filters were passed (empty array).
+log "$script_dir -- filters: ${filters[*]:-}"
 
 cd "$script_dir"
-scripts=$(find ./runs -maxdepth 1 -mindepth 1 -executable -type f | sort)
+# `-perm -u+x` is portable across GNU and BSD find (`-executable` is GNU-only).
+scripts=$(find ./runs -maxdepth 1 -mindepth 1 -type f -perm -u+x | sort)
 
 for script in $scripts; do
 	if [ ${#filters[@]} -gt 0 ]; then
