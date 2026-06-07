@@ -1,28 +1,23 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# 99-checks — verify that all dev-env tools are installed as Linux binaries.
-#
-# On WSL, Windows binaries (e.g. fzf.exe) can appear in PATH via the Windows
-# PATH passthrough. Each check uses an explicit Linux path where applicable so
-# a Windows version never masks a missing Linux install.
+# 99-checks — verify that all dev-env tools are installed.
 #
 # Exit codes:
 #   0 — all checks passed
 #   1 — one or more checks failed
 # ---------------------------------------------------------------------------
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os arch
+
 PASS=0
 FAIL=0
 WARN=0
-
-# Detect WSL
-IS_WSL=false
-if grep -qi microsoft /proc/version 2>/dev/null; then
-    IS_WSL=true
-fi
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -52,72 +47,33 @@ _warn() {
     WARN=$(( WARN + 1 ))
 }
 
-# Check whether a Windows .exe version exists somewhere in PATH for a given
-# command name. Prints the path if found, empty string otherwise.
-_windows_version() {
-    local name="$1"
-    local found
-    found="$(command -v "${name}.exe" 2>/dev/null || true)"
-    if [ -z "$found" ]; then
-        # Also catch bare 'name' that resolves to /mnt/c/...
-        found="$(command -v "$name" 2>/dev/null || true)"
-        [[ "$found" == /mnt/* ]] || found=""
-    fi
-    echo "$found"
-}
-
 # check_cmd LABEL [CMD]
-#   Passes when 'command -v CMD' resolves to a non-/mnt/ path.
-#   CMD defaults to LABEL.
+#   Passes when 'command -v CMD' resolves. CMD defaults to LABEL.
 check_cmd() {
     local label="$1" cmd="${2:-$1}"
     local resolved
     resolved="$(command -v "$cmd" 2>/dev/null || true)"
     if [ -z "$resolved" ]; then
-        if $IS_WSL; then
-            local win
-            win="$(_windows_version "$cmd")"
-            if [ -n "$win" ]; then
-                _warn "$label" "not installed — Windows version in PATH: $win"
-                return
-            fi
-        fi
         _fail "$label" "not found in PATH"
-    elif [[ "$resolved" == /mnt/* ]]; then
-        _warn "$label" "resolves to Windows path: $resolved"
     else
         _ok "$label" "$resolved"
     fi
 }
 
-# check_apt LABEL PACKAGE
-#   Uses dpkg to confirm the package is installed; also verifies the binary
-#   resolves to a path outside /mnt (i.e. not a Windows binary).
-check_apt() {
-    local label="$1" pkg="$2" cmd="${3:-$1}"
-    if dpkg -s "$pkg" &>/dev/null 2>&1; then
+# check_pkg LABEL CMD [PKG]
+#   Uses pkg_check (command -v with pacman -Q fallback) to confirm a tool.
+check_pkg() {
+    local label="$1" cmd="$2" pkg="${3:-$2}"
+    if pkg_check "$cmd" "$pkg"; then
         local resolved
         resolved="$(command -v "$cmd" 2>/dev/null || true)"
-        if [[ "$resolved" == /mnt/* ]]; then
-            _warn "$label" "dpkg says installed but binary resolves to Windows path: $resolved"
-        else
-            _ok "$label" "${resolved:-installed via dpkg}"
-        fi
+        _ok "$label" "${resolved:-installed (pacman: $pkg)}"
     else
-        if $IS_WSL; then
-            local win
-            win="$(_windows_version "$cmd")"
-            if [ -n "$win" ]; then
-                _warn "$label" "not installed via apt — Windows version in PATH: $win"
-                return
-            fi
-        fi
-        _fail "$label" "not installed (dpkg: $pkg)"
+        _fail "$label" "not installed (pacman: $pkg)"
     fi
 }
 
 # check_file LABEL PATH [description]
-#   Passes when PATH exists (file or directory).
 check_file() {
     local label="$1" path="$2" desc="${3:-$2}"
     if [ -e "$path" ]; then
@@ -132,33 +88,39 @@ check_file() {
 # ---------------------------------------------------------------------------
 
 echo ""
-if $IS_WSL; then
-    printf "${BOLD}Checking dev environment (WSL detected)${RESET}\n"
-else
-    printf "${BOLD}Checking dev environment${RESET}\n"
-fi
+printf "${BOLD}Checking dev environment (Arch Linux)${RESET}\n"
 printf '%0.s─' {1..50}
 echo ""
 echo ""
 
-# --- apt packages (01-libs, 02-tmux) ---------------------------------------
-echo "  apt packages"
-check_apt "git"     "git"
-check_apt "rg"      "ripgrep"       "rg"
-check_apt "jq"      "jq"
-check_apt "delta"   "git-delta"     "delta"
-check_apt "tldr"    "tldr"
-check_apt "unzip"   "unzip"
-check_apt "tree"    "tree"
-check_apt "htop"    "htop"
-check_apt "btop"    "btop"
-check_apt "tmux"    "tmux"
-check_apt "lldb"    "lldb"
+# --- pacman packages (01-libs, 02-tmux) ------------------------------------
+echo "  pacman packages"
+check_pkg "git"     "git"
+check_pkg "rg"      "rg"    "ripgrep"
+check_pkg "jq"      "jq"
+check_pkg "delta"   "delta" "git-delta"
+check_pkg "tldr"    "tldr"  "tealdeer"
+check_pkg "unzip"   "unzip"
+check_pkg "tree"    "tree"
+check_pkg "htop"    "htop"
+check_pkg "btop"    "btop"
+check_pkg "tmux"    "tmux"
 
 echo ""
 
-# --- explicit Linux binaries ($HOME/.local/bin, etc.) ----------------------
-echo "  explicit Linux binaries"
+# --- build toolchain (base-devel / lldb; replaces build-essential) ---------
+echo "  build toolchain"
+if pacman -Qg base-devel &>/dev/null; then
+    _ok "base-devel" "installed"
+else
+    _fail "base-devel" "not installed (run: sudo pacman -S base-devel)"
+fi
+check_cmd "lldb"
+
+echo ""
+
+# --- installer-based binaries ($HOME/.local/bin, etc.) ---------------------
+echo "  installer binaries"
 check_cmd "oh-my-posh"
 check_cmd "opencode"
 check_cmd "claude"
@@ -176,22 +138,16 @@ echo "  version managers"
 # nvm — shell function, no binary; check the nvm.sh loader
 check_file "nvm" "$HOME/.nvm/nvm.sh" "$HOME/.nvm/nvm.sh"
 
-# node/npm via nvm
 check_cmd "node"
 check_cmd "npm"
-
-# pyenv
 check_cmd "pyenv"
 check_cmd "python"
-
-# fzf
 check_cmd "fzf"
 
 echo ""
 
 # --- npm globals (13-playwright-cli) ----------------------------------------
 echo "  npm globals"
-
 check_cmd "playwright-cli"
 
 # ---------------------------------------------------------------------------
