@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-set -e
+# pyenv init references unset variables, so `set -u` is intentionally omitted.
+set -eo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os macos
 
 export PYENV_ROOT="$HOME/.pyenv"
 
@@ -9,10 +15,12 @@ if [ -x "$PYENV_ROOT/bin/pyenv" ]; then
     exit 0
 fi
 
-sudo apt install -y make build-essential libssl-dev zlib1g-dev \
-libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
-libffi-dev liblzma-dev git
+# Python build dependencies for macOS.
+# zlib, bzip2, openssl, ncurses and lzma are provided by the system / SDK on
+# macOS and are NOT needed as separate formulae (see pyenv wiki). The compiler
+# toolchain comes from the Xcode CLT (install.sh). The rest is installed via
+# brew. openssl + readline are still recommended for a clean Python build.
+pkg_install openssl@3 readline sqlite3 xz tcl-tk libffi libxmlsec1 wget
 
 curl https://pyenv.run | bash
 

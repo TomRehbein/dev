@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
-if [ -x "/usr/local/bin/nvim" ]; then
-    echo "neovim already installed: $(/usr/local/bin/nvim --version | head -1)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os macos
+
+# Install target: Apple Silicon Homebrew prefix. On Apple Silicon the user owns
+# /opt/homebrew, so `make install` needs NO sudo (unlike Ubuntu's /usr/local).
+NVIM_PREFIX="$BREW_PREFIX"
+NVIM_BIN="$NVIM_PREFIX/bin/nvim"
+
+if [ -x "$NVIM_BIN" ]; then
+    echo "neovim already installed: $("$NVIM_BIN" --version | head -1)"
     exit 0
 fi
 
-sudo apt install -y cmake gettext lua5.1 liblua5.1-0-dev
+# Build deps via brew. `lua` replaces Ubuntu's lua5.1/liblua5.1-0-dev.
+# The C toolchain comes from the Xcode CLT (install.sh).
+pkg_install cmake gettext lua
 
 if [ ! -d "$HOME/personal/neovim" ]; then
     git clone https://github.com/neovim/neovim.git "$HOME/personal/neovim"
@@ -16,5 +28,6 @@ else
 fi
 
 cd "$HOME/personal/neovim"
-make CMAKE_BUILD_TYPE=RelWithDebInfo
-sudo make install
+# Pin the install prefix to /opt/homebrew so nvim lands on PATH without sudo.
+make CMAKE_BUILD_TYPE=RelWithDebInfo CMAKE_INSTALL_PREFIX="$NVIM_PREFIX"
+make install

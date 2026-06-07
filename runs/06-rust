@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os macos
 
 if [ -x "$HOME/.cargo/bin/rustup" ]; then
     echo "rust already installed: $("$HOME/.cargo/bin/rustup" show active-toolchain 2>/dev/null || echo 'unknown version')"
@@ -9,4 +14,3 @@ fi
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y
 export PATH="$HOME/.cargo/bin:$PATH"
-
