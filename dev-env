@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# shellcheck source=lib/os.sh
+source "$script_dir/lib/os.sh"
+require_os macos
 dry="0"
 
 if [ -z "$XDG_CONFIG_HOME" ]; then
@@ -127,9 +130,21 @@ fi
 copy_file "$script_dir/env/.tmux-sessionizer" "$HOME"
 copy_file "$script_dir/env/.bashrc"           "$HOME"
 copy_file "$script_dir/env/.bash_profile"     "$HOME"
+copy_file "$script_dir/env/.shell_common.sh"  "$HOME"
 copy_file "$script_dir/env/.inputrc"          "$HOME"
 copy_file "$script_dir/env/.gitconfig"        "$HOME"
 copy_file "$script_dir/env/.gitignore_global" "$HOME"
+
+# OS-specific overrides — deploy only the matching OS directory's dotfiles.
+# macOS default shell is zsh, so this ships ~/.zprofile and ~/.zshrc.
+os_override_dir="$script_dir/env/os/$(detect_os)"
+if [ -d "$os_override_dir" ]; then
+    log "deploying OS overrides from $os_override_dir"
+    for f in "$os_override_dir"/.[!.]* "$os_override_dir"/*; do
+        [ -f "$f" ] || continue
+        copy_file "$f" "$HOME"
+    done
+fi
 
 # Configs we fully own — replace entirely
 copy_dir "$script_dir/env/.config/tmux"             "$XDG_CONFIG_HOME/tmux"
