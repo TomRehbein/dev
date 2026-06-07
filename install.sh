@@ -1,11 +1,31 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
-sudo apt -y update
+# --- OS guard --------------------------------------------------------------
+# install.sh is the bootstrap entry point; lib/os.sh may not be in place yet
+# when run via `curl | bash`, so do a lightweight inline check here.
+# Arch (and arch-based) systems identify via /etc/os-release.
+if [ "$(uname -s)" != "Linux" ] || ! grep -qiE '^(ID|ID_LIKE)=.*arch' /etc/os-release 2>/dev/null; then
+    echo "ERROR: this is the Arch Linux bootstrap. Detected a non-Arch system. Aborting." >&2
+    exit 1
+fi
 
-if ! command -v git &> /dev/null; then
-    sudo apt -y install git
+# --- Base toolchain --------------------------------------------------------
+# Refresh the package db and install git + base-devel (replaces Ubuntu's
+# build-essential and provides the compiler toolchain for AUR builds).
+# --needed makes this idempotent on a rolling-release system.
+sudo pacman -Sy --needed --noconfirm git base-devel
+
+# --- yay (AUR helper) ------------------------------------------------------
+# Bootstrap yay so later runs/ scripts can install AUR packages
+# (tldr-git, lesspipe, ...). Idempotent: skipped when yay is present.
+if ! command -v yay &> /dev/null; then
+    echo "Bootstrapping yay from the AUR..."
+    yay_build="$(mktemp -d)"
+    git clone https://aur.archlinux.org/yay.git "$yay_build/yay"
+    (cd "$yay_build/yay" && makepkg -si --noconfirm)
+    rm -rf "$yay_build"
 fi
 
 if [ ! -d "$HOME/personal" ]; then
