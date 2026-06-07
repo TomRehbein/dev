@@ -17,10 +17,13 @@ shopt -s checkwinsize
 
 # ---- Pager ----
 
+# lesspipe is a Debian package living at /usr/bin/lesspipe — Linux only.
+# Guard keeps macOS (no such binary) from erroring.
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 # ---- Prompt (plain fallback, overridden by oh-my-posh below) ----
 
+# /etc/debian_chroot only exists on Debian/Ubuntu — guard skips it elsewhere.
 if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
@@ -30,7 +33,8 @@ case "$TERM" in
 esac
 
 if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    # `command -v tput` instead of a hardcoded /usr/bin path (macOS differs).
+    if command -v tput >/dev/null 2>&1 && tput setaf 1 >&/dev/null; then
         color_prompt=yes
     else
         color_prompt=
@@ -52,13 +56,19 @@ esac
 
 # ---- Colors ----
 
-if [ -x /usr/bin/dircolors ]; then
+# GNU coreutils path (Linux): dircolors + `ls --color`. Not present on macOS,
+# whose BSD `ls` uses CLICOLOR/LSCOLORS instead (handled in the else branch).
+if command -v dircolors >/dev/null 2>&1; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
     export LS_COLORS='di=01;33:ln=01;35:so=01;32:pi=01;36:ex=01;31:bd=01;33:cd=01;33:su=01;35:sg=01;35:tw=01;32:ow=01;32:'
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
+else
+    # macOS / BSD ls: enable ANSI colors via CLICOLOR.
+    export CLICOLOR=1
+    export LSCOLORS='ExGxFxdxCxegedabagaced'
 fi
 
 # ---- Aliases ----
@@ -73,9 +83,15 @@ alias l='ls -CF'
 
 if ! shopt -oq posix; then
     if [ -f /usr/share/bash-completion/bash_completion ]; then
+        # Linux (Debian/Ubuntu) location.
         source /usr/share/bash-completion/bash_completion
     elif [ -f /etc/bash_completion ]; then
         source /etc/bash_completion
+    elif [ -n "${HOMEBREW_PREFIX:-}" ] && [ -f "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh" ]; then
+        # macOS via Homebrew (HOMEBREW_PREFIX set by brew shellenv).
+        source "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh"
+    elif [ -f /opt/homebrew/etc/profile.d/bash_completion.sh ]; then
+        source /opt/homebrew/etc/profile.d/bash_completion.sh
     fi
 fi
 
@@ -101,8 +117,6 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
 # ---- Prompt: oh-my-posh ----
 
-# Use the Linux binary explicitly — on WSL, oh-my-posh.exe may be on the
-# Windows PATH and would produce a broken prompt if used here.
-if [ -x "$HOME/.local/bin/oh-my-posh" ]; then
-    eval "$("$HOME/.local/bin/oh-my-posh" init bash --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
+if command -v oh-my-posh >/dev/null 2>&1; then
+    eval "$(oh-my-posh init bash --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/the-unnamed.omp.json")"
 fi
