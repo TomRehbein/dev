@@ -15,6 +15,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/os.sh"
 require_os arch
 
+# ./run launches non-login subshells — .bash_profile / .shell_common.sh are
+# never sourced, so tool paths set up by the installers are absent. Add them
+# here so the checks reflect the real post-login environment.
+export PATH="$HOME/.local/bin:$HOME/.pyenv/bin:$HOME/.cargo/bin:$HOME/.bun/bin:$PATH"
+NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [ -d "$NVM_DIR/versions/node" ]; then
+    _node=$(ls "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -1)
+    [ -n "$_node" ] && export PATH="$NVM_DIR/versions/node/$_node/bin:$PATH"
+    unset _node
+fi
+
 PASS=0
 FAIL=0
 WARN=0
@@ -110,7 +121,8 @@ echo ""
 
 # --- build toolchain (base-devel / lldb; replaces build-essential) ---------
 echo "  build toolchain"
-if pacman -Qg base-devel &>/dev/null; then
+# base-devel is a metapackage since Arch 2022 — use -Q (not -Qg group query).
+if pacman -Q base-devel &>/dev/null; then
     _ok "base-devel" "installed"
 else
     _fail "base-devel" "not installed (run: sudo pacman -S base-devel)"
@@ -148,7 +160,8 @@ echo ""
 
 # --- npm globals (13-playwright-cli) ----------------------------------------
 echo "  npm globals"
-check_cmd "playwright-cli"
+# @playwright/cli registers the binary as "playwright", not "playwright-cli".
+check_cmd "playwright"
 
 # ---------------------------------------------------------------------------
 # Summary

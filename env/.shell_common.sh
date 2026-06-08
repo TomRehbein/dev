@@ -1,9 +1,14 @@
 # ~/.shell_common.sh — shell-neutral login config shared by bash and zsh.
 # Sourced from ~/.bash_profile (bash) and ~/.zprofile (zsh, macOS).
+# Also sourced from ~/.bashrc on Arch (non-login interactive shells).
 # Contains only POSIX-compatible env vars, PATH setup, tool inits and helper
 # functions — NO shell-specific syntax (keybindings, completions live in the
 # per-shell rc files). Keeping this single file avoids duplicating the login
 # config across bash and zsh.
+
+# Guard against double-sourcing (login shell sources .bash_profile → this file
+# → .bashrc which would source this file again without the guard).
+export _SHELL_COMMON_LOADED=1
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export GIT_EDITOR="nvim"

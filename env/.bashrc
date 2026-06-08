@@ -4,6 +4,15 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
+# ---- Login env for non-login shells ----
+# Arch terminal emulators open non-login interactive shells — .bash_profile is
+# never sourced. Source .shell_common.sh here so PATH, tool inits, and env vars
+# (pyenv, nvm, oh-my-posh, etc.) are available in every interactive session.
+# The _SHELL_COMMON_LOADED guard prevents double-sourcing in login shells.
+if [ -z "${_SHELL_COMMON_LOADED:-}" ] && [ -f ~/.shell_common.sh ]; then
+    source ~/.shell_common.sh
+fi
+
 # ---- History ----
 
 HISTCONTROL=ignoredups:ignorespace
