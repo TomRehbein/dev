@@ -79,7 +79,7 @@ if [ ! -d "$HOME/personal/obsidian" ]; then
 fi
 
 if [ ! -d "$HOME/personal/dev" ]; then
-    git clone https://github.com/TomRehbein/dev "$HOME/personal/dev"
+    git clone --branch arch https://github.com/TomRehbein/dev "$HOME/personal/dev"
 fi
 
 pushd "$HOME/personal/dev"
