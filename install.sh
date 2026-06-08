@@ -11,6 +11,44 @@ if [ "$(uname -s)" != "Linux" ] || ! grep -qiE '^(ID|ID_LIKE)=.*arch' /etc/os-re
     exit 1
 fi
 
+# --- Root / sudo check -----------------------------------------------------
+# makepkg refuses to run as root. Do the one-time root bootstrap here, then
+# require re-running as a regular user.
+if [ "$(id -u)" -eq 0 ]; then
+    echo "Running as root — performing one-time bootstrap..."
+
+    # Install sudo if not already present
+    if ! command -v sudo &>/dev/null; then
+        echo "Installing sudo..."
+        pacman -Sy --needed --noconfirm sudo
+    fi
+
+    # Ensure %wheel has sudo access
+    if ! grep -q '^%wheel ALL=(ALL:ALL) ALL' /etc/sudoers; then
+        echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers
+    fi
+
+    echo ""
+    echo "============================================================"
+    echo "  Root bootstrap done. Now run this script as a regular user."
+    echo "============================================================"
+    echo ""
+    echo "  If you don't have a regular user yet:"
+    echo "    useradd -m -G wheel <username>"
+    echo "    passwd <username>"
+    echo "    su - <username>"
+    echo "    bash <(curl -fsSL <your-install-url>)"
+    echo ""
+    exit 0
+fi
+
+# Non-root: sudo must be available
+if ! command -v sudo &>/dev/null; then
+    echo "ERROR: sudo is not installed. Switch to root and run:" >&2
+    echo "  pacman -S sudo" >&2
+    exit 1
+fi
+
 # --- Base toolchain --------------------------------------------------------
 # Refresh the package db and install git + base-devel (replaces Ubuntu's
 # build-essential and provides the compiler toolchain for AUR builds).
