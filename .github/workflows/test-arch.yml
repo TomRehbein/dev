@@ -3,8 +3,14 @@ name: Arch port validation
 on:
   push:
     branches: [arch]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   workflow_dispatch:
 
 # GitHub has no native Arch runners — run inside an archlinux container on
