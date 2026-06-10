@@ -20,4 +20,4 @@ if [ -d "$NVM_DIR/versions/node" ] && [ -n "$(ls "$NVM_DIR/versions/node" 2>/dev
     export PATH="$NVM_DIR/versions/node/$(ls "$NVM_DIR/versions/node" | sort -V | tail -1)/bin:$PATH"
 fi
 
-npm install -g @playwright/cli@latest
+npm install -g playwright@latest

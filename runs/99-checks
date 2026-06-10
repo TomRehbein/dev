@@ -19,7 +19,7 @@ ensure_brew
 # ./run launches non-login subshells — .zprofile is never sourced, so tool
 # paths set up by the installers are absent. Add them here so the checks
 # reflect the real post-login environment.
-export PATH="$HOME/.local/bin:$HOME/.pyenv/bin:$HOME/.cargo/bin:$HOME/.bun/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.pyenv/bin:$HOME/.cargo/bin:$HOME/.bun/bin:$HOME/personal/fzf/bin:$PATH"
 NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 if [ -d "$NVM_DIR/versions/node" ]; then
     _node=$(ls "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -1)
