@@ -1,0 +1,56 @@
+name: Arch port validation
+
+on:
+  push:
+    branches: [arch]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# GitHub has no native Arch runners — run inside an archlinux container on
+# ubuntu-latest. The base-devel image ships the compiler toolchain (replaces
+# the install.sh bootstrap, like Homebrew being pre-installed on macos-latest).
+jobs:
+  # ---------------------------------------------------------------------------
+  # Fast job: validate script logic without installing anything.
+  # Catches broken require_os guards, syntax errors, and dry-run path issues.
+  # ---------------------------------------------------------------------------
+  dry-run:
+    name: Dry run (logic)
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: run --dry
+        run: ./run --dry
+
+      - name: dev-env --dry
+        run: ./dev-env --dry
+
+  # ---------------------------------------------------------------------------
+  # Full install: runs every runs/ script in a real Arch container, then
+  # deploys dotfiles and runs 99-checks to verify the result. install.sh
+  # bootstrap (yay/makepkg) is skipped — no runs/ script needs the AUR.
+  # ---------------------------------------------------------------------------
+  install:
+    name: Full install + verify
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v6
+
+      # The container runs as root without sudo; the scripts call
+      # `sudo pacman`, so install sudo first (root may sudo by default).
+      # -Syu avoids partial upgrades against the rolling repos.
+      - name: Prepare container (sudo + git)
+        run: pacman -Syu --noconfirm sudo git
+
+      - name: Install tools
+        run: ./run
+
+      - name: Deploy dotfiles
+        run: ./dev-env
+
+      - name: Verify environment (99-checks)
+        run: ./runs/99-checks
