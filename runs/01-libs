@@ -10,7 +10,9 @@ require_os macos
 # build-essential and lldb are not Homebrew formulae on macOS — they ship with
 # the Xcode Command Line Tools, which install.sh installs as a precondition.
 # git also comes from the CLT but is listed so brew keeps it up to date.
-BREW_PACKAGES=(git ripgrep jq tldr unzip tmux tree htop btop git-delta)
+# tldr was disabled in Homebrew 2025-10-24 (unmaintained upstream).
+# tlrc is the Rust-based replacement — still provides the `tldr` binary.
+BREW_PACKAGES=(git ripgrep jq tlrc unzip tmux tree htop btop git-delta)
 pkg_install "${BREW_PACKAGES[@]}"
 
 if [ ! -d "$HOME/personal/fzf" ]; then
