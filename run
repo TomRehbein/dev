@@ -48,7 +48,7 @@ _refresh_path() {
 	for d in "${dirs[@]}"; do
 		case ":${PATH}:" in
 			*":${d}:"*) ;;
-			*) [[ -d "$d" ]] && export PATH="${d}:${PATH}" ;;
+			*) if [[ -d "$d" ]]; then export PATH="${d}:${PATH}"; fi ;;
 		esac
 	done
 }
