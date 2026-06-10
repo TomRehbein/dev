@@ -18,13 +18,14 @@ require_os arch
 # ./run launches non-login subshells — .bash_profile / .shell_common.sh are
 # never sourced, so tool paths set up by the installers are absent. Add them
 # here so the checks reflect the real post-login environment.
-export PATH="$HOME/.local/bin:$HOME/.pyenv/bin:$HOME/.cargo/bin:$HOME/.bun/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.pyenv/bin:$HOME/.cargo/bin:$HOME/.bun/bin:$HOME/personal/fzf/bin:$PATH"
 NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 if [ -d "$NVM_DIR/versions/node" ]; then
     _node=$(ls "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -1)
     [ -n "$_node" ] && export PATH="$NVM_DIR/versions/node/$_node/bin:$PATH"
     unset _node
 fi
+
 
 PASS=0
 FAIL=0
@@ -160,7 +161,7 @@ echo ""
 
 # --- npm globals (13-playwright-cli) ----------------------------------------
 echo "  npm globals"
-# @playwright/cli registers the binary as "playwright", not "playwright-cli".
+# The playwright npm package registers the binary as "playwright".
 check_cmd "playwright"
 
 # ---------------------------------------------------------------------------

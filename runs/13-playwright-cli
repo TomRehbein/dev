@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/os.sh"
 require_os arch
 
-# @playwright/cli installs the binary as "playwright", not "playwright-cli".
+# The playwright npm package installs the binary as "playwright".
 if command -v playwright &> /dev/null; then
     echo "playwright already installed: $(playwright --version 2>/dev/null || echo 'unknown version')"
     exit 0
@@ -20,4 +20,4 @@ if [ -d "$NVM_DIR/versions/node" ] && [ -n "$(ls "$NVM_DIR/versions/node" 2>/dev
     export PATH="$NVM_DIR/versions/node/$(ls "$NVM_DIR/versions/node" | sort -V | tail -1)/bin:$PATH"
 fi
 
-npm install -g @playwright/cli@latest
+npm install -g playwright@latest

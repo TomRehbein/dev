@@ -16,9 +16,13 @@ fi
 
 git clone https://github.com/TomRehbein/opencode-dispatch "$REPO_DIR"
 
+# bun's workspace runner spawns sub-processes that call `bun` by name,
+# not via absolute path — export so they find it.
+export PATH="$HOME/.bun/bin:$PATH"
+
 cd "$REPO_DIR"
-"$HOME/.bun/bin/bun" install
-"$HOME/.bun/bin/bun" run build
+bun install
+bun run build
 
 cd "$REPO_DIR/packages/cli"
-"$HOME/.bun/bin/bun" link
+bun link

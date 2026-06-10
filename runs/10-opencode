@@ -15,4 +15,9 @@ fi
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
 
-curl -fsSL https://opencode.ai/install | bash -s -- -d "$HOME/.local/bin"
+# The -d flag is no longer supported by the installer; omit it.
+# opencode's API is occasionally unreachable from CI runners — treat as
+# non-fatal so the pipeline doesn't fail on a transient network issue.
+if ! curl -fsSL https://opencode.ai/install | bash; then
+    echo "⚠️  opencode install failed (API unreachable?) — skipping"
+fi
