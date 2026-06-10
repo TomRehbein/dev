@@ -16,7 +16,8 @@ else
     curl -s https://ohmyposh.dev/install.sh | bash -s -- -d "$HOME/.local/bin"
 
     export PATH="$HOME/.local/bin:$PATH"
-    oh-my-posh font install meslo
+    # Font installation requires a display/font subsystem — skip in CI.
+    [ -n "${CI:-}" ] || oh-my-posh font install meslo
 fi
 
 # Deploy theme file — runs/ executes before dev-env, so the theme must be
