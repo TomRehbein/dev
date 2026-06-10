@@ -134,7 +134,12 @@ echo ""
 # --- installer-based binaries ($HOME/.local/bin, etc.) ---------------------
 echo "  installer binaries"
 check_cmd "oh-my-posh"
-check_cmd "opencode"
+# opencode installer may fail in CI due to API rate-limits; downgrade to warn
+if command -v opencode &>/dev/null; then
+    _ok "opencode" "$(command -v opencode)"
+else
+    _warn "opencode" "not found (installer may have been blocked by API limit)"
+fi
 check_cmd "claude"
 check_cmd "bun"
 check_cmd "uv"
