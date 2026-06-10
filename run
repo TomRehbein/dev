@@ -9,7 +9,7 @@ require_os arch
 filters=()
 dry="0"
 
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
 	if [[ $1 == "--dry" ]]; then
 		dry="1"
 	else
@@ -34,6 +34,25 @@ execute() {
 	"$@"
 }
 
+# Installers add to ~/.bash_profile / ~/.bashrc but can't export back to this
+# shell. Re-check known locations after each script so subsequent scripts (and
+# 99-checks) find freshly installed tools by plain name.
+_refresh_path() {
+	local dirs=(
+		"$HOME/.bun/bin"
+		"$HOME/.local/bin"
+		"$HOME/.cargo/bin"
+		"$HOME/.opencode/bin"
+		"$HOME/.pyenv/bin"
+	)
+	for d in "${dirs[@]}"; do
+		case ":${PATH}:" in
+			*":${d}:"*) ;;
+			*) if [[ -d "$d" ]]; then export PATH="${d}:${PATH}"; fi ;;
+		esac
+	done
+}
+
 # ${arr[*]:-} keeps `set -u` happy when no filters were passed (empty array).
 log "$script_dir -- filters: ${filters[*]:-}"
 
@@ -53,5 +72,6 @@ for script in $scripts; do
 		fi
 	fi
 
-	execute ./$script
+	execute "$script"
+	_refresh_path
 done
