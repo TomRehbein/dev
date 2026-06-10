@@ -7,11 +7,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/os.sh"
 require_os macos
 
-if ! pkg_check tmux; then
-    pkg_install tmux
-else
-    echo "tmux already installed: $(tmux -V)"
-fi
+# pkg_install is idempotent — installs only when missing.
+pkg_install tmux
 
 TMUX_DIR="$SCRIPT_DIR/../env/.config/tmux"
 TMUX_CONF="$TMUX_DIR/tmux.conf"

@@ -36,12 +36,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache Homebrew packages
+      # Only the download cache is safe to restore. Caching /opt/homebrew/Cellar
+      # restores kegs WITHOUT their bin symlinks, so `brew list` reports tools
+      # as installed while the binaries are missing from PATH.
+      - name: Cache Homebrew downloads
         uses: actions/cache@v4
         with:
-          path: |
-            ~/Library/Caches/Homebrew
-            /opt/homebrew/Cellar
+          path: ~/Library/Caches/Homebrew
           key: brew-${{ runner.os }}-${{ hashFiles('runs/01-libs', 'runs/02-tmux') }}
           restore-keys: brew-${{ runner.os }}-
 
