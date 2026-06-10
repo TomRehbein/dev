@@ -1,0 +1,45 @@
+name: Ubuntu validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Fast job: validate script logic without installing anything.
+  # Catches syntax errors and dry-run path issues.
+  # ---------------------------------------------------------------------------
+  dry-run:
+    name: Dry run (logic)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: run --dry
+        run: ./run --dry
+
+      - name: dev-env --dry
+        run: ./dev-env --dry
+
+  # ---------------------------------------------------------------------------
+  # Full install: runs every runs/ script on a real Ubuntu runner, then
+  # deploys dotfiles and runs 99-checks to verify the result. sudo is
+  # passwordless on GitHub runners, so the apt calls work unattended.
+  # ---------------------------------------------------------------------------
+  install:
+    name: Full install + verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install tools
+        run: ./run
+
+      - name: Deploy dotfiles
+        run: ./dev-env
+
+      - name: Verify environment (99-checks)
+        run: ./runs/99-checks
