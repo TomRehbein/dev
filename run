@@ -9,7 +9,7 @@ require_os macos
 filters=()
 dry="0"
 
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
 	if [[ $1 == "--dry" ]]; then
 		dry="1"
 	else
@@ -72,6 +72,6 @@ for script in $scripts; do
 		fi
 	fi
 
-	execute ./$script
+	execute "$script"
 	_refresh_path
 done

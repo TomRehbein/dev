@@ -14,7 +14,7 @@ if [ -z "${XDG_CONFIG_HOME:-}" ]; then
 	XDG_CONFIG_HOME="$HOME/.config"
 fi
 
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
 	if [[ $1 == "--dry" ]]; then
 		dry="1"
 	fi

@@ -91,10 +91,7 @@ pkg_install() {
             local pkg missing=()
             for pkg in "$@"; do
                 # `brew list` covers both formulae and casks.
-                if brew list --formula "$pkg" >/dev/null 2>&1 || brew list "$pkg" >/dev/null 2>&1; then
-                    continue
-                fi
-                missing+=("$pkg")
+                brew list "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
             done
             if [ "${#missing[@]}" -gt 0 ]; then
                 echo "brew install: ${missing[*]}"

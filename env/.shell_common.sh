@@ -24,14 +24,15 @@ fi
 
 # ---- PATH helpers ----
 
+# Match against ":$PATH:" so /foo/bin is not mistaken for /foo/bin2.
 addToPath() {
-    if [[ "$PATH" != *"$1"* ]]; then
+    if [[ ":$PATH:" != *":$1:"* ]]; then
         export PATH="$PATH:$1"
     fi
 }
 
 addToPathFront() {
-    if [[ "$PATH" != *"$1"* ]]; then
+    if [[ ":$PATH:" != *":$1:"* ]]; then
         export PATH="$1:$PATH"
     fi
 }
