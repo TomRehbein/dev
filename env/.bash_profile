@@ -52,6 +52,7 @@ addToPath      "$HOME/.npm-global/bin"
 
 # Tools
 addToPath "$BUN_INSTALL/bin"
+addToPath "$HOME/personal/fzf/bin"
 
 # ---- Tool inits (run once at login) ----
 
