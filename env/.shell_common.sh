@@ -64,6 +64,9 @@ addToPath      "$HOME/.npm-global/bin"
 
 # Tools
 addToPath "$BUN_INSTALL/bin"
+# tmux-sessionizer runs as a non-interactive login shell, which skips the rc
+# files that source ~/.fzf.bash — so fzf must be on the login PATH here.
+addToPath "$HOME/personal/fzf/bin"
 
 # ---- Tool inits (run once at login) ----
 
