@@ -15,9 +15,28 @@ fi
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
 
+# Known-good version, used when the GitHub API can't be reached.
+OPENCODE_FALLBACK_VERSION="1.17.18"
+OPENCODE_API="https://api.github.com/repos/anomalyco/opencode/releases/latest"
+
+# The upstream installer resolves the latest release through an unauthenticated
+# GitHub API call, which is rate-limited on shared CI runner IPs. Resolve the
+# version ourselves (authenticated when a token is around) and hand it to the
+# installer via --version, so it never has to hit the API.
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+    version=$(curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" "$OPENCODE_API") || version=""
+else
+    version=$(curl -fsSL "$OPENCODE_API") || version=""
+fi
+version=$(printf '%s' "$version" | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
+
+if [ -z "$version" ]; then
+    version="$OPENCODE_FALLBACK_VERSION"
+    echo "⚠️  GitHub API unreachable/rate-limited — falling back to opencode v$version"
+fi
+
 # The -d flag is no longer supported by the installer; omit it.
-# opencode's API is occasionally unreachable from CI runners — treat as
-# non-fatal so the pipeline doesn't fail on a transient network issue.
-if ! curl -fsSL https://opencode.ai/install | bash; then
-    echo "⚠️  opencode install failed (API unreachable?) — skipping"
+# Still non-fatal: a transient network issue shouldn't abort the whole run.
+if ! curl -fsSL https://opencode.ai/install | bash -s -- --version "$version"; then
+    echo "⚠️  opencode install failed — skipping"
 fi

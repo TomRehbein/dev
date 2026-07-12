@@ -53,6 +53,10 @@ jobs:
           restore-keys: brew-${{ runner.os }}-
 
       - name: Install tools
+        # Lets 10-opencode resolve the latest release through an authenticated
+        # GitHub API call instead of hitting the shared-IP rate limit.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./run
 
       - name: Deploy dotfiles
