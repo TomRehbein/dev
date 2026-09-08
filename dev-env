@@ -134,6 +134,7 @@ copy_file "$script_dir/env/.shell_common.sh"  "$HOME"
 copy_file "$script_dir/env/.inputrc"          "$HOME"
 copy_file "$script_dir/env/.gitconfig"        "$HOME"
 copy_file "$script_dir/env/.gitignore_global" "$HOME"
+copy_file "$script_dir/env/.skhdrc"           "$HOME"
 
 # OS-specific overrides — deploy only the matching OS directory's dotfiles.
 # macOS default shell is zsh, so this ships ~/.zprofile and ~/.zshrc.

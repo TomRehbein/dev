@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os macos
+
+# skhd — simple hotkey daemon for global launch-or-focus shortcuts.
+# Not in Homebrew core; lives in the author's own tap.
+ensure_brew
+if ! pkg_check skhd; then
+    brew tap koekeishiya/formulae
+    brew install koekeishiya/formulae/skhd
+else
+    echo "skhd already installed"
+fi
+
+# install.sh runs ./runs/ BEFORE ./dev-env, so on a fresh machine ~/.skhdrc
+# does not exist yet when this service would start. Bootstrap-copy it here;
+# dev-env remains the canonical deployer (same file, idempotent).
+if [ ! -f "$HOME/.skhdrc" ]; then
+    cp "$SCRIPT_DIR/../env/.skhdrc" "$HOME/.skhdrc"
+fi
+
+# LaunchAgent management: restart (config reload) when running, start otherwise.
+# Requires the manual one-time grant: System Settings > Privacy & Security >
+# Accessibility > /opt/homebrew/opt/skhd/bin/skhd
+if pgrep -x skhd >/dev/null 2>&1; then
+    skhd --restart-service
+    echo "skhd service restarted (config reloaded)"
+elif skhd --start-service 2>/dev/null; then
+    echo "skhd service started"
+else
+    echo "WARNING: skhd service could not start." >&2
+    echo "  Grant Accessibility to /opt/homebrew/opt/skhd/bin/skhd and re-run this script." >&2
+fi
