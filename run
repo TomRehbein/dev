@@ -44,6 +44,7 @@ _refresh_path() {
 		"$HOME/.cargo/bin"
 		"$HOME/.opencode/bin"
 		"$HOME/.pyenv/bin"
+		"$HOME/.pyenv/shims"
 	)
 	for d in "${dirs[@]}"; do
 		case ":${PATH}:" in
