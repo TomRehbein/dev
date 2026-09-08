@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+#
+# dev-browser — isolates login credentials from OpenCode/Claude agents.
+#
+# Tom logs in manually (headed browser, `login` subcommand) and the resulting
+# session (cookies + localStorage) is saved to disk. Agents only ever call
+# `use`, which loads that saved session into playwright-cli — they never see
+# a password, TOTP seed, or 1Password output. See docs/BROWSER_CREDENTIALS.md
+# for the full security model and its limits.
+
+set -euo pipefail
+
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dev-browser"
+SESSIONS_DIR="$STATE_DIR/sessions"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dev-browser"
+PROFILES_FILE="$CONFIG_DIR/profiles.json"
+LOGIN_SESSION="dev-browser-login"
+
+usage() {
+    cat <<'EOF'
+Usage: dev-browser <command> [args]
+
+Commands:
+  login <profile>    Open a headed browser, log in manually, save the session.
+                      Run this yourself — never from an agent.
+  use <profile>       Load a saved session so playwright-cli can act as that
+                      profile. Fails if no session was saved yet.
+  status               List profiles with session age and expiry.
+  list                 List configured profile names.
+  logout <profile>    Delete a saved session.
+
+Profiles live in ~/.config/dev-browser/profiles.json.
+EOF
+}
+
+require_jq() {
+    if ! command -v jq &> /dev/null; then
+        echo "dev-browser needs jq. Install it (see runs/01-libs)." >&2
+        exit 1
+    fi
+}
+
+ensure_profiles_file() {
+    mkdir -p "$CONFIG_DIR"
+    chmod 700 "$CONFIG_DIR"
+    if [[ ! -f "$PROFILES_FILE" ]]; then
+        cat > "$PROFILES_FILE" <<'EOF'
+{
+  "_comment": "Add one entry per system. maxAgeHours is how long `status`/`use` treat a saved session as fresh — sessions past that age still load, but `status` flags them so you know to re-login. The `op` field is documentation only in phase 1 (dev-browser never reads it); it just tells you which 1Password item to use during manual login.",
+  "example": {
+    "url": "https://example.com/",
+    "loginUrl": "https://example.com/login",
+    "maxAgeHours": 8,
+    "op": { "item": "op://Kunden/Example Portal" }
+  }
+}
+EOF
+        chmod 600 "$PROFILES_FILE"
+        echo "created template: $PROFILES_FILE — add a profile before using dev-browser" >&2
+    fi
+}
+
+profile_field() {
+    local profile="$1" field="$2"
+    jq -r --arg p "$profile" --arg f "$field" '.[$p][$f] // empty' "$PROFILES_FILE"
+}
+
+require_profile() {
+    local profile="$1"
+    if [[ -z "$profile" ]]; then
+        echo "Error: profile name required" >&2
+        exit 1
+    fi
+    if ! jq -e --arg p "$profile" 'has($p)' "$PROFILES_FILE" &> /dev/null; then
+        echo "Error: unknown profile '$profile'. Add it to $PROFILES_FILE first." >&2
+        exit 1
+    fi
+}
+
+session_file() {
+    echo "$SESSIONS_DIR/$1.json"
+}
+
+cmd_login() {
+    local profile="$1"
+    require_profile "$profile"
+
+    local url op_item
+    url=$(profile_field "$profile" "loginUrl")
+    [[ -z "$url" ]] && url=$(profile_field "$profile" "url")
+    op_item=$(profile_field "$profile" "op.item")
+
+    mkdir -p "$SESSIONS_DIR"
+    chmod 700 "$SESSIONS_DIR"
+
+    echo "Opening headed browser for '$profile' — log in yourself."
+    [[ -n "$op_item" ]] && echo "1Password item: $op_item"
+    echo "Press Enter here once you're logged in."
+
+    playwright-cli -s="$LOGIN_SESSION" open "$url" --headed
+    read -r -p ""
+
+    local target
+    target=$(session_file "$profile")
+    playwright-cli -s="$LOGIN_SESSION" state-save "$target"
+    chmod 600 "$target"
+    playwright-cli -s="$LOGIN_SESSION" close
+
+    echo "✅ $profile — Session gespeichert ($(date '+%Y-%m-%d %H:%M'))"
+}
+
+cmd_use() {
+    local profile="$1"
+    require_profile "$profile"
+
+    local target
+    target=$(session_file "$profile")
+    if [[ ! -f "$target" ]]; then
+        echo "Error: no saved session for '$profile'. Ask Tom to run: dev-browser login $profile" >&2
+        exit 1
+    fi
+
+    local url
+    url=$(profile_field "$profile" "url")
+
+    playwright-cli state-load "$target"
+    if [[ -n "$url" ]]; then
+        playwright-cli goto "$url"
+    fi
+    echo "$profile ready ($url)"
+}
+
+session_age_hours() {
+    local file="$1"
+    local mtime now
+    mtime=$(stat -c %Y "$file" 2> /dev/null || stat -f %m "$file" 2> /dev/null)
+    now=$(date +%s)
+    echo $(( (now - mtime) / 3600 ))
+}
+
+cmd_status() {
+    printf '%-20s %-10s %-8s %-8s %s\n' "PROFILE" "SESSION" "AGE(h)" "MAX(h)" "URL"
+    local profile
+    for profile in $(jq -r 'keys[] | select(. != "_comment")' "$PROFILES_FILE"); do
+        local file url max_age age state
+        file=$(session_file "$profile")
+        url=$(profile_field "$profile" "url")
+        max_age=$(profile_field "$profile" "maxAgeHours")
+        [[ -z "$max_age" ]] && max_age="-"
+
+        if [[ -f "$file" ]]; then
+            age=$(session_age_hours "$file")
+            state="ok"
+            if [[ "$max_age" != "-" ]] && (( age > max_age )); then
+                state="expired"
+            fi
+        else
+            age="-"
+            state="none"
+        fi
+
+        printf '%-20s %-10s %-8s %-8s %s\n' "$profile" "$state" "$age" "$max_age" "$url"
+    done
+}
+
+cmd_list() {
+    jq -r 'keys[] | select(. != "_comment")' "$PROFILES_FILE"
+}
+
+cmd_logout() {
+    local profile="$1"
+    require_profile "$profile"
+    local target
+    target=$(session_file "$profile")
+    rm -f "$target"
+    echo "✅ $profile — Session gelöscht"
+}
+
+main() {
+    require_jq
+    ensure_profiles_file
+
+    local cmd="${1:-}"
+    shift || true
+
+    case "$cmd" in
+        login)  cmd_login "${1:-}" ;;
+        use)    cmd_use "${1:-}" ;;
+        status) cmd_status ;;
+        list)   cmd_list ;;
+        logout) cmd_logout "${1:-}" ;;
+        -h | --help | "") usage ;;
+        *)
+            echo "Error: unknown command '$cmd'" >&2
+            usage >&2
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

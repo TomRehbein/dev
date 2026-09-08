@@ -3,5 +3,17 @@
   "plugin": [
     "superpowers@git+https://github.com/obra/superpowers.git",
     "opencode-handoff"
-  ]
+  ],
+  "permission": {
+    "bash": {
+      "op": "deny",
+      "op *": "deny",
+      "*op.exe*": "deny",
+      "dev-browser login*": "deny",
+      "dev-browser logout*": "deny",
+      "*dev-browser/sessions*": "deny",
+      "playwright-cli eval*": "ask",
+      "playwright-cli -s=dev-browser-login*": "deny"
+    }
+  }
 }
