@@ -2,6 +2,8 @@
 # Run it with: powershell -ExecutionPolicy Bypass -File install.ps1
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+# Older Windows 10 still offers TLS 1.0 first, which the PowerShell Gallery refuses.
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 $Repo = 'git@github.com:TomRehbein/TouchIQ.git'
 $GnuToolchain = 'stable-x86_64-pc-windows-gnu'
@@ -28,6 +30,7 @@ function Update-Path {
     $env:Path = @(
         [Environment]::GetEnvironmentVariable('Path', 'Machine'),
         [Environment]::GetEnvironmentVariable('Path', 'User'),
+        "$env:LOCALAPPDATA\Microsoft\WindowsApps",
         "$HOME\.bun\bin",
         "$HOME\.cargo\bin"
     ) -join ';'
@@ -61,13 +64,35 @@ function Get-Details {
     while (-not $script:Name) { $script:Name = Ask 'Dein Name' }
     $script:Email = Ask 'Deine GitHub-E-Mail' $oldEmail
     while ($script:Email -notmatch '^[^@\s]+@[^@\s]+\.[^@\s]+$') { $script:Email = Ask 'Bitte eine gültige E-Mail' }
-    $script:Dir = Ask 'Ordner für touchiq' "$HOME\TouchIQ"
+    $script:Dir = Resolve-Dir (Ask 'Ordner für touchiq' "$HOME\TouchIQ")
 }
 
-function Install-Tools {
+# git does not know ~ on Windows and resolves relative paths elsewhere than PowerShell,
+# so the folder becomes absolute before git sees it.
+function Resolve-Dir($path) {
+    $path = $path.Trim().Trim('"')
+    if ($path -match '^~') { $path = $HOME + $path.Substring(1) }
+    if (-not [IO.Path]::IsPathRooted($path)) { $path = Join-Path $HOME $path }
+    [IO.Path]::GetFullPath($path)
+}
+
+# Windows Sandbox and some trimmed Windows installs come without winget.
+function Install-WingetCli {
+    if (Get-Command winget -ErrorAction SilentlyContinue) { return }
+    Say 'winget installieren'
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force | Out-Null
+    Install-Module Microsoft.WinGet.Client -Repository PSGallery -Scope CurrentUser -Force -AllowClobber
+    Import-Module Microsoft.WinGet.Client
+    $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if ($admin) { Repair-WinGetPackageManager -Latest -Force -AllUsers } else { Repair-WinGetPackageManager -Latest -Force }
+    Update-Path
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         throw 'winget fehlt. Installier im Microsoft Store den "App-Installer" und starte das Script neu.'
     }
+}
+
+function Install-Tools {
+    Install-WingetCli
     Install-Winget 'Git.Git' 'git'
     Install-Winget 'Gyan.FFmpeg' 'ffmpeg'
     Install-Winget 'BrechtSanders.WinLibs.POSIX.UCRT' 'MinGW (für Rust)'
