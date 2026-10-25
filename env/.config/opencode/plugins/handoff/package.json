@@ -1,0 +1,18 @@
+{
+  "name": "opencode-handoff-v2",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenCode v2 CLI plugin: /handoff writes a handoff prompt and starts a new session with it",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@opencode/plugin": "2.0.20",
+    "typescript": "^5.9.0"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./tui": "./tui.ts"
+  }
+}
