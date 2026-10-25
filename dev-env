@@ -157,8 +157,9 @@ copy_dir "$script_dir/env/.config/omp"              "$XDG_CONFIG_HOME/omp"
 # copy_dir_files_only recurses into subdirs automatically
 copy_dir_files_only "$script_dir/env/.config/opencode" "$XDG_CONFIG_HOME/opencode"
 
-# Claude Code config — fully owned, replace entirely
-copy_dir "$script_dir/env/.claude" "$HOME/.claude"
+# Claude Code config. Merge files only: ~/.claude/skills, commands and agents
+# also hold machine-only entries that copy_dir would wipe.
+copy_dir_files_only "$script_dir/env/.claude" "$HOME/.claude"
 
 # ~/.local is not exclusively ours (e.g. ~/.local/bin contains oh-my-posh),
 # so use copy_dir_files_only to avoid deleting unrelated files.
