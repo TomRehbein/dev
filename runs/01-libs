@@ -12,7 +12,8 @@ require_os macos
 # git also comes from the CLT but is listed so brew keeps it up to date.
 # tldr was disabled in Homebrew 2025-10-24 (unmaintained upstream).
 # tlrc is the Rust-based replacement — still provides the `tldr` binary.
-BREW_PACKAGES=(git ripgrep jq tlrc unzip tmux tree htop btop git-delta)
+# tree-sitter-cli is required by nvim-treesitter (main branch) to build parsers.
+BREW_PACKAGES=(git ripgrep jq tlrc unzip tmux tree htop btop git-delta gh glab shellcheck tree-sitter-cli wget ffmpeg)
 pkg_install "${BREW_PACKAGES[@]}"
 
 if [ ! -d "$HOME/personal/fzf" ]; then
