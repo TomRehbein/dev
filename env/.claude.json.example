@@ -1,17 +1,4 @@
 {
-  "mcpServers": {
-    "tavily": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "tavily-mcp@latest"],
-      "env": {
-        "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY"
-      }
-    },
-    "mathematics": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@opencode-ai/mathematics-mcp@latest"]
-    }
-  }
+  "_comment": "Global mcpServers stay empty to save context. Disabled servers live in ~/.claude/mcp-disabled/. Enable per project with: claude mcp add-json -s local <name> '<json>' (see ~/.claude/mcp-disabled/README.md). Put API keys in the shell env, not in this file.",
+  "mcpServers": {}
 }
