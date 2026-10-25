@@ -1,7 +1,72 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openrouter": {
+      "options": {
+        "apiKey": "{env:OPENROUTER_API_KEY}"
+      }
+    },
+    "lmstudio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio (local)",
+      "options": {
+        "baseURL": "http://localhost:1234/v1"
+      },
+      "models": {
+        "qwen/qwen3.8-27b": {
+          "name": "Qwen3.8 27B"
+        }
+      }
+    }
+  },
   "plugin": [
-    "superpowers@git+https://github.com/obra/superpowers.git",
-    "opencode-handoff"
-  ]
+    "opencode-superpowers"
+  ],
+  "mcp": {
+    "jira": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v1/mcp",
+      "enabled": true
+    },
+    "Tavily": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "tavily-mcp@0.1.3"
+      ],
+      "environment": {
+        "TAVILY_API_KEY": "{env:TAVILY_API_KEY}"
+      },
+      "enabled": true
+    },
+    "chrome": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@1.10.1",
+        "--autoConnect",
+        "--no-usage-statistics"
+      ],
+      "enabled": false
+    },
+    "Mathematics": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "mcp-mathematics"
+      ],
+      "enabled": false
+    },
+    "teams": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@floriscornel/teams-mcp@0.9.0"
+      ],
+      "enabled": false
+    }
+  }
 }
