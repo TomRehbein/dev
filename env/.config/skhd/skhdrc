@@ -1,7 +1,9 @@
-# skhd config — global launch-or-focus hotkeys (Meh = ctrl + shift + alt)
+# skhd config: global launch-or-focus hotkeys (Meh = ctrl + shift + alt)
 # `open -a` starts the app if not running, brings it to front if it is.
 ctrl + shift + alt - t : open -a "Microsoft Teams"
 ctrl + shift + alt - g : open -a "Ghostty"
+ctrl + shift + alt - f : open -a "T3 Code (Nightly)"
+ctrl + shift + alt - d : open -a "T3 Code (Beta)"
 ctrl + shift + alt - b : open -a "Google Chrome"
 ctrl + shift + alt - v : open -a "Vivaldi"
 ctrl + shift + alt - c : open -a "Claude"

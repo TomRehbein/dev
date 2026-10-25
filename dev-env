@@ -134,7 +134,6 @@ copy_file "$script_dir/env/.shell_common.sh"  "$HOME"
 copy_file "$script_dir/env/.inputrc"          "$HOME"
 copy_file "$script_dir/env/.gitconfig"        "$HOME"
 copy_file "$script_dir/env/.gitignore_global" "$HOME"
-copy_file "$script_dir/env/.skhdrc"           "$HOME"
 
 # OS-specific overrides — deploy only the matching OS directory's dotfiles.
 # macOS default shell is zsh, so this ships ~/.zprofile and ~/.zshrc.
@@ -157,6 +156,7 @@ copy_dir "$script_dir/env/.config/nvim"             "$XDG_CONFIG_HOME/nvim"
 copy_dir "$script_dir/env/.config/tmux-sessionizer" "$XDG_CONFIG_HOME/tmux-sessionizer"
 copy_dir "$script_dir/env/.config/omp"              "$XDG_CONFIG_HOME/omp"
 copy_dir "$script_dir/env/.config/ghostty"          "$XDG_CONFIG_HOME/ghostty"
+copy_dir "$script_dir/env/.config/skhd"             "$XDG_CONFIG_HOME/skhd"
 
 # Configs we partially own — merge files only, don't touch the rest
 # copy_dir_files_only recurses into subdirs automatically
