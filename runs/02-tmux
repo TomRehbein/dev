@@ -10,15 +10,24 @@ require_os macos
 # pkg_install is idempotent — installs only when missing.
 pkg_install tmux
 
-TMUX_DIR="$SCRIPT_DIR/../env/.config/tmux"
-TMUX_CONF="$TMUX_DIR/tmux.conf"
+REPO_CONF="$SCRIPT_DIR/../env/.config/tmux/tmux.conf"
+# Plugins go into the home tmux dir to match TMUX_PLUGIN_MANAGER_PATH in
+# tmux.conf. Installing into the repo dir leaves them missing on the first
+# server start, so continuum/resurrect silently skip the startup restore.
+TMUX_DIR="$HOME/.config/tmux"
 TPM_DIR="$TMUX_DIR/plugins/tpm"
+
+mkdir -p "$TMUX_DIR"
+
+# install.sh runs ./runs/ before ./dev-env, but TPM reads the plugin list from
+# ~/.config/tmux/tmux.conf. Bootstrap it here; dev-env deploys the same file later.
+if [ ! -f "$TMUX_DIR/tmux.conf" ]; then
+    cp "$REPO_CONF" "$TMUX_DIR/tmux.conf"
+fi
 
 if [ ! -d "$TPM_DIR" ]; then
     git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
 fi
-
-mkdir -p ~/.config/tmux
 
 export TMUX_PLUGIN_MANAGER_PATH="$TMUX_DIR/plugins"
 "$TPM_DIR/bin/install_plugins"

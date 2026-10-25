@@ -147,8 +147,12 @@ if [ -d "$os_override_dir" ]; then
     done
 fi
 
+# ~/.config/tmux also holds TPM plugins (runs/02-tmux), so ship only the conf.
+# This also ignores a stale gitignored env/.config/tmux/plugins from older runs.
+execute mkdir -p "$XDG_CONFIG_HOME/tmux"
+copy_file "$script_dir/env/.config/tmux/tmux.conf" "$XDG_CONFIG_HOME/tmux"
+
 # Configs we fully own — replace entirely
-copy_dir "$script_dir/env/.config/tmux"             "$XDG_CONFIG_HOME/tmux"
 copy_dir "$script_dir/env/.config/nvim"             "$XDG_CONFIG_HOME/nvim"
 copy_dir "$script_dir/env/.config/tmux-sessionizer" "$XDG_CONFIG_HOME/tmux-sessionizer"
 copy_dir "$script_dir/env/.config/omp"              "$XDG_CONFIG_HOME/omp"
