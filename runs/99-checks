@@ -117,6 +117,12 @@ check_pkg "tree"    "tree"
 check_pkg "htop"    "htop"
 check_pkg "btop"    "btop"
 check_pkg "tmux"    "tmux"
+check_pkg "gh"      "gh"
+check_pkg "glab"    "glab"
+check_pkg "shellcheck" "shellcheck"
+check_pkg "tree-sitter" "tree-sitter" "tree-sitter-cli"
+check_pkg "wget"    "wget"
+check_pkg "ffmpeg"  "ffmpeg"
 
 echo ""
 
@@ -167,6 +173,23 @@ echo ""
 echo "  npm globals"
 # @playwright/cli registers the binary as "playwright", not "playwright-cli".
 check_cmd "playwright"
+
+echo ""
+
+# --- optional: personal tools (16) and GUI casks (15), warn only -----------
+echo "  optional"
+if command -v tscli &>/dev/null; then
+    _ok "tscli" "$(command -v tscli)"
+else
+    _warn "tscli" "not found (private repo, needs SSH access)"
+fi
+if [ -n "${CI:-}" ]; then
+    _warn "casks" "skipped on CI"
+elif brew bundle check --no-upgrade --file="$SCRIPT_DIR/../Brewfile" &>/dev/null; then
+    _ok "casks" "all Brewfile casks installed"
+else
+    _warn "casks" "some Brewfile casks missing (run: brew bundle check --verbose --file=Brewfile)"
+fi
 
 # ---------------------------------------------------------------------------
 # Summary

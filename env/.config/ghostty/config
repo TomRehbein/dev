@@ -1,0 +1,44 @@
+# Don't restore window state, otherwise Ghostty may reopen in native fullscreen
+window-save-state = never
+
+# Treat Option as Alt, otherwise Option+Q types `œ` instead of sending alt+q
+macos-option-as-alt = true
+
+# Cmd+1..9 -> Alt+1..9 (ESC n) so tmux passes it through to apps like opencode
+keybind = super+digit_1=text:\x1b1
+keybind = super+1=text:\x1b1
+keybind = super+digit_2=text:\x1b2
+keybind = super+2=text:\x1b2
+keybind = super+digit_3=text:\x1b3
+keybind = super+3=text:\x1b3
+keybind = super+digit_4=text:\x1b4
+keybind = super+4=text:\x1b4
+keybind = super+digit_5=text:\x1b5
+keybind = super+5=text:\x1b5
+keybind = super+digit_6=text:\x1b6
+keybind = super+6=text:\x1b6
+keybind = super+digit_7=text:\x1b7
+keybind = super+7=text:\x1b7
+keybind = super+digit_8=text:\x1b8
+keybind = super+8=text:\x1b8
+keybind = super+digit_9=text:\x1b9
+keybind = super+9=text:\x1b9
+# Cmd+Ctrl+1..9 -> Ctrl+Alt+1..9 as CSI u (ESC[49;7u), needs tmux extended-keys on
+keybind = super+ctrl+digit_1=text:\x1b[49;7u
+keybind = super+ctrl+1=text:\x1b[49;7u
+keybind = super+ctrl+digit_2=text:\x1b[50;7u
+keybind = super+ctrl+2=text:\x1b[50;7u
+keybind = super+ctrl+digit_3=text:\x1b[51;7u
+keybind = super+ctrl+3=text:\x1b[51;7u
+keybind = super+ctrl+digit_4=text:\x1b[52;7u
+keybind = super+ctrl+4=text:\x1b[52;7u
+keybind = super+ctrl+digit_5=text:\x1b[53;7u
+keybind = super+ctrl+5=text:\x1b[53;7u
+keybind = super+ctrl+digit_6=text:\x1b[54;7u
+keybind = super+ctrl+6=text:\x1b[54;7u
+keybind = super+ctrl+digit_7=text:\x1b[55;7u
+keybind = super+ctrl+7=text:\x1b[55;7u
+keybind = super+ctrl+digit_8=text:\x1b[56;7u
+keybind = super+ctrl+8=text:\x1b[56;7u
+keybind = super+ctrl+digit_9=text:\x1b[57;7u
+keybind = super+ctrl+9=text:\x1b[57;7u

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os macos
+
+# Personal tools live in private GitHub repos, so they need SSH access.
+# Everything here is non-fatal: on CI or a fresh machine without keys the
+# clone fails, we warn and carry on.
+export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
+export PATH="$HOME/.cargo/bin:$HOME/.bun/bin:$PATH"
+
+# clone_if_missing <repo> <dir> — returns 0 when <dir> exists afterwards.
+clone_if_missing() {
+    local repo="$1" dir="$2"
+    [ -d "$dir" ] && return 0
+    mkdir -p "$(dirname "$dir")"
+    if ! git clone "git@github.com:TomRehbein/$repo.git" "$dir"; then
+        echo "⚠️  cloning $repo failed (private repo, no SSH access?) — skipping"
+        return 1
+    fi
+}
+
+# --- tscli -----------------------------------------------------------------
+if command -v tscli &> /dev/null; then
+    echo "tscli already installed: $(command -v tscli)"
+elif ! command -v cargo &> /dev/null; then
+    echo "⚠️  cargo not found (run 06-rust first) — skipping tscli"
+elif clone_if_missing tscli "$HOME/personal/tscli"; then
+    cargo install --path "$HOME/personal/tscli" || echo "⚠️  tscli build failed — skipping"
+fi
+
+# --- oc-threads (opencode TUI plugin) --------------------------------------
+# No build step, only dependencies. Registering it in ~/.config/opencode/tui.json
+# is up to dev-env.
+if ! command -v bun &> /dev/null; then
+    echo "⚠️  bun not found (run 08-bun first) — skipping oc-threads"
+elif clone_if_missing oc-threads "$HOME/personal/oc-threads"; then
+    (cd "$HOME/personal/oc-threads" && bun install) || echo "⚠️  oc-threads bun install failed — skipping"
+fi

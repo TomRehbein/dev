@@ -62,6 +62,9 @@ addToPath "$BUN_INSTALL/bin"
 # tmux-sessionizer runs as a non-interactive login shell, which skips the rc
 # files that source ~/.fzf.zsh|bash — so fzf must be on the login PATH here.
 addToPath "$HOME/personal/fzf/bin"
+# LM Studio CLI (lms). Replaces the line its installer appends to ~/.zshrc,
+# which dev-env overwrites.
+[ -d "$HOME/.lmstudio/bin" ] && addToPath "$HOME/.lmstudio/bin"
 
 # ---- Tool inits (run once at login) ----
 

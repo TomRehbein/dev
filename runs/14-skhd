@@ -17,11 +17,15 @@ else
     echo "skhd already installed"
 fi
 
-# install.sh runs ./runs/ BEFORE ./dev-env, so on a fresh machine ~/.skhdrc
+# install.sh runs ./runs/ BEFORE ./dev-env, so on a fresh machine the config
 # does not exist yet when this service would start. Bootstrap-copy it here;
 # dev-env remains the canonical deployer (same file, idempotent).
-if [ ! -f "$HOME/.skhdrc" ]; then
-    cp "$SCRIPT_DIR/../env/.skhdrc" "$HOME/.skhdrc"
+# skhd prefers ~/.config/skhd/skhdrc over ~/.skhdrc, so a leftover
+# ~/.skhdrc from older setups is ignored.
+SKHD_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/skhd/skhdrc"
+if [ ! -f "$SKHD_CONF" ]; then
+    mkdir -p "$(dirname "$SKHD_CONF")"
+    cp "$SCRIPT_DIR/../env/.config/skhd/skhdrc" "$SKHD_CONF"
 fi
 
 # LaunchAgent management: restart (config reload) when running, start otherwise.

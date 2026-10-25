@@ -5,3 +5,7 @@ env/.config/tmux/plugins/
 env/.bash_profile.local
 .claude/
 !env/.claude/
+
+# CLI auth state, never commit
+env/.config/gh/hosts.yml
+env/.config/glab-cli/config.yml

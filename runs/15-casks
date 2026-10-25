@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/os.sh
+source "$SCRIPT_DIR/../lib/os.sh"
+require_os macos
+ensure_brew
+
+# GUI casks are large and not needed to validate the scripts on a CI runner.
+if [ -n "${CI:-}" ]; then
+    echo "CI detected, skipping GUI casks"
+    exit 0
+fi
+
+# Many apps were installed by hand before. --adopt lets brew take over an
+# existing /Applications/*.app instead of failing with "already an App at".
+# brew bundle already passes --adopt for casks; the env var covers older brews.
+# --no-upgrade keeps reruns fast and avoids touching self-updating apps.
+export HOMEBREW_CASK_OPTS="--adopt"
+brew bundle install --no-upgrade --file="$SCRIPT_DIR/../Brewfile"

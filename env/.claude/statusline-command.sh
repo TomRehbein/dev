@@ -41,6 +41,8 @@ fi
 # ── 4. 5-hour usage limit ────────────────────────────────────────────────────
 five_pct=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
 five_resets=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
+# Reset-Zeit für den oc-threads-Autopilot (startet erst nach Ablauf dieses Fensters)
+[ -n "$five_resets" ] && printf '%s\n' "$five_resets" > "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/cache/five-hour-resets-at"
 if [ -n "$five_pct" ]; then
   five_int=$(printf '%.0f' "$five_pct")
   if [ -n "$five_resets" ]; then

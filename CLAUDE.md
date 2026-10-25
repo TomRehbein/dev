@@ -1,67 +1,41 @@
-# Mission: Portierung des Ubuntu-Dev-Setups auf macOS und Arch Linux
+# CLAUDE.md
 
-## Kontext
-Dieses Repository enthält ein Ubuntu-basiertes Entwicklungs-Setup:
-- Tools werden über `apt`, `curl` und `git`/`make` installiert.
-- Installations-Skripte liegen als Bash-Skripte in `./Runs`.
-- In `./env` liegen Konfigurationen (neovim, tmux, `.bashrc`, `.bash_profile`,
-  `.inputrc` u.a.), die ins Home-Verzeichnis ausgespielt werden.
-- Helfer-Skripte im Hauptverzeichnis automatisieren das Ausspielen.
+Dev-Setup für macOS (Apple Silicon). Installiert Tools über Homebrew und Skripte und spielt Dotfiles und Configs ins Home-Verzeichnis aus.
 
-## Ziel
-Erstelle getrennte Branches, mit denen das Setup auf **macOS** und **Arch Linux**
-genauso reibungslos läuft wie das Ubuntu-Setup auf `main`. `main` bleibt unverändert.
-Die Struktur soll erweiterbar bleiben, sodass weitere Systeme später leicht ergänzbar sind.
+## Branches
 
-## Rollen / Subagenten
-- **orchestrator** (Opus): koordiniert, erstellt den Plan, delegiert an Subagenten,
-  ändert selbst keinen Branch-Code und merged nichts nach `main`.
-- **analyzer** (Sonnet, read-only): erstellt das Inventar des `main`-Branch (Phase 0).
-- **macos-porter** (Opus): verantwortet Branch `macos` end-to-end.
-- **arch-porter** (Opus): verantwortet Branch `arch` end-to-end.
-- **docs-writer** (Sonnet): aktualisiert README/Doku je Branch (Phase 5).
+- `main`: Ubuntu-Variante. Nicht ändern.
+- `macos`: diese Variante (macOS, Apple Silicon).
+- `arch`: Arch Linux.
 
-## Ablauf
+Ein Branch pro OS. Änderungen am OS-Branch gehen nicht nach `main`.
 
-### Phase 0 – Analyse (analyzer)
-Inventar erstellen, ohne etwas zu ändern:
-- installierte Tools je Methode (apt / curl / git+make)
-- Skripte in `./Runs`: Inhalt, Ausführungsreihenfolge, Abhängigkeiten
-- `./env`: welche Datei wird wohin ausgespielt (Symlink vs. Copy)
-- Funktion der Helfer-Skripte im Hauptverzeichnis
-Ergebnis als kurzes, strukturiertes Analyse-Dokument, bevor Code geändert wird.
+## Struktur
 
-### Phase 1 – Plan & Mapping (orchestrator)
-- OS-unabhängig vs. OS-spezifisch sauber trennen.
-- Mapping-Tabelle: Ubuntu-Paket → Homebrew → Arch/AUR. Fehlende oder abweichende Tools
-  markieren und Alternativen vorschlagen.
-- Strukturkonzept festlegen: gemeinsame Configs **nicht** duplizieren
-  (geteilte Basis + OS-spezifische Overrides statt Copy-Paste).
+- `install.sh`: Bootstrap per `curl | bash`. Installiert CLT und Homebrew, klont das Repo, ruft `./run` und `./dev-env` auf.
+- `run [filter...] [--dry]`: führt die ausführbaren `runs/NN-*`-Skripte in Reihenfolge aus. Filter wie `./run 15-casks` begrenzen den Lauf.
+- `runs/NN-name`: ein Installer pro Thema. `99-checks` prüft den Stand.
+- `dev-env [--dry]`: spielt `env/` nach `$HOME` und `$XDG_CONFIG_HOME` aus.
+- `env/`: Dotfiles und Configs. `env/os/macos/` enthält die OS-Overrides (`.zprofile`, `.zshrc`).
+- `lib/os.sh`: `require_os`, `pkg_install`, `pkg_check`, `ensure_brew`.
+- `Brewfile`: GUI-Apps, installiert von `runs/15-casks`.
 
-### Phase 2 – Portierung (macos-porter, arch-porter)
-Je Subagent: Branch von `main` erstellen → `./Runs`-Skripte portieren (Paketmanager
-und Kommandos ersetzen, Pfade anpassen, fehlende Tools lösen) → Helfer-/Deploy-Skripte
-an OS-Pfade und Default-Shell anpassen → nur die wirklich nötigen `env`-Configs anpassen.
+In `dev-env` gibt es drei Kopier-Varianten. `copy_dir` ersetzt ein Verzeichnis komplett und ist nur für Configs gedacht, die uns ganz gehören. `copy_dir_files_only` mergt, z. B. für `~/.claude`, `gh` und `opencode`. `copy_file_if_missing` legt Templates nur an, wenn sie fehlen.
 
-### Phase 3 – OS-Stolperfallen (beachten)
-**macOS:** kein `apt` → Homebrew (`brew install`, GUI via `--cask`); Homebrew-Pfad zur
-Laufzeit erkennen (`/opt/homebrew` Apple Silicon vs. `/usr/local` Intel); Default-Shell
-`zsh` (`.zshrc`/`.zprofile`) bzw. bash explizit setzen; BSD- statt GNU-Coreutils
-(`sed -i`, `readlink`, `date`).
-**Arch:** `pacman -S --needed`; AUR-Pakete via `yay`/`paru`; abweichende Paketnamen
-gegenüber Ubuntu; Rolling Release; Build-Abhängigkeiten via `base-devel`.
+## Konventionen für Skripte
 
-### Phase 4 – Validierung
-Skripte idempotent (mehrfaches Ausführen unschädlich); `set -euo pipefail` und saubere
-Fehlerbehandlung; OS-/Architektur-Check am Anfang jedes Skripts (abbrechen bei falschem OS);
-wenn möglich Trockenlauf in Container/VM und Ergebnis dokumentieren.
+- Shebang `#!/usr/bin/env bash`, `set -euo pipefail`.
+- Am Anfang `source lib/os.sh` und `require_os macos`, damit ein falsches OS sofort abbricht.
+- Idempotent: Vorhandenes überspringen (`pkg_install`, `command -v`, `[ ! -d ... ]`). Ein zweiter Lauf darf nichts kaputt machen.
+- `--dry` behandeln `run` und `dev-env`. Einzelne `runs/`-Skripte brauchen kein eigenes `--dry`.
+- Bei gesetztem `CI` überspringen GUI-Casks und der Neustart von Dock und Finder. Neue GUI-Schritte entsprechend absichern.
+- Nicht kritische Schritte (z. B. `16-personal-tools`) warnen und machen weiter, statt mit `exit 1` abzubrechen.
+- Kommentare nur bei OS-Workarounds und wo das Warum nicht offensichtlich ist.
 
-### Phase 5 – Doku (docs-writer)
-README je Branch: Voraussetzungen, Installation, Abweichungen zu Ubuntu.
-Liste ersetzter oder weggelassener Tools inkl. kurzer Begründung.
+## Regeln
 
-## Rahmenbedingungen
-- `main` bleibt unangetastet; genau ein Branch pro OS.
-- Kleine, aussagekräftige Commits.
-- Keine unnötige Duplizierung gemeinsamer Configs.
-- Verständliche Kommentare bei OS-spezifischen Workarounds.
+- Keine Secrets im Repo. Maschinenlokale Werte gehören nach `~/.bash_profile.local` (Vorlage: `env/.bash_profile.local.example`).
+- Keine Auth-Dateien committen (`gh/hosts.yml`, `glab-cli/config.yml`).
+- Gemeinsame Configs nicht duplizieren. OS-Spezifisches liegt in `env/os/<os>/`, der Rest in `env/`.
+- `dev-env` überschreibt `~/.zshrc`. Lokale Änderungen dort gehen verloren.
+- `docs/PORT_*.md` sind historische Planungsdokumente aus der Portierung. Maßgeblich sind README und Skripte.
