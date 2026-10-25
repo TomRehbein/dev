@@ -1,0 +1,18 @@
+# GUI apps, installed by runs/15-casks via `brew bundle`.
+# Work-only apps (citrix, azure storage explorer, ...) are deliberately absent.
+cask "1password"
+cask "firefox"
+cask "ghostty"
+cask "godot"
+cask "google-chrome"
+cask "keymapp"
+cask "lm-studio"
+cask "localsend"
+cask "muesli"
+cask "t3-code@nightly"
+cask "tailscale-app"
+cask "the-unarchiver"
+cask "tidal"
+cask "vivaldi"
+cask "vlc"
+cask "whatsapp"
